@@ -56,7 +56,7 @@ jobs:
       - name: Deploy infrastructure
         env:
           CDK_DEFAULT_REGION: ${{ env.AWS_REGION }}
-        run: bun run infra:deploy -- --require-approval never --outputs-file infra-outputs.json
+        run: bun run infra:deploy -- --require-approval never --outputs-file ../infra-outputs.json
 
       - name: Read stack outputs
         id: stack
