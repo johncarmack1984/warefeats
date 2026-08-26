@@ -50,6 +50,8 @@ Resources:
                 token.actions.githubusercontent.com:sub:
                   - !Sub repo:${GitHubOrg}/${GitHubRepository}:ref:refs/heads/main
                   - !Sub repo:${GitHubOrg}/${GitHubRepository}:environment:production
+                  - "repo:johncarmack1984@26649979/warefeats@1346858977:ref:refs/heads/main"
+                  - "repo:johncarmack1984@26649979/warefeats@1346858977:environment:production"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/PowerUserAccess
 
