@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: GitHub OIDC deploy role for warefeats
+
+Parameters:
+  GitHubOrg:
+    Type: String
+    Default: johncarmack1984
+  GitHubRepository:
+    Type: String
+    Default: warefeats
+  ExistingOidcProviderArn:
+    Type: String
+    Default: ""
+    Description: Supply the account's existing token.actions.githubusercontent.com provider ARN, or leave empty to create one.
+
+Conditions:
+  CreateOidcProvider: !Equals [!Ref ExistingOidcProviderArn, ""]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: CreateOidcProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  GitHubDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: warefeats-github-deploy
+      Description: Deploys the warefeats CDK stack and static web build from main.
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - CreateOidcProvider
+                - !Ref GitHubOidcProvider
+                - !Ref ExistingOidcProviderArn
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${GitHubRepository}:ref:refs/heads/main
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+
+Outputs:
+  RoleArn:
+    Description: Store this value as the AWS_DEPLOY_ROLE_ARN GitHub Actions secret.
+    Value: !GetAtt GitHubDeployRole.Arn

@@ -1,0 +1,23 @@
+{
+  "name": "warefeats",
+  "private": true,
+  "packageManager": "bun@1.4.0",
+  "workspaces": [
+    "web",
+    "services/*",
+    "infra"
+  ],
+  "scripts": {
+    "build": "bun run --cwd web build",
+    "check": "bun run --cwd web check && bun run --cwd services/benchmark-runner check && bun run --cwd infra check",
+    "test": "bun run --cwd web test && bun run --cwd services/benchmark-runner test && bun run --cwd infra test",
+    "benchmark:lint": "bun run --cwd services/benchmark-runner benchmark",
+    "benchmark:smoke": "bun run --cwd services/benchmark-runner benchmark --quick",
+    "infra:synth": "bun run --cwd infra synth",
+    "infra:deploy": "bun run --cwd infra deploy"
+  },
+  "devDependencies": {
+    "@types/bun": "1.2.21",
+    "typescript": "5.9.2"
+  }
+}

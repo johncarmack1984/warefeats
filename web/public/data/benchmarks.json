@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-26T12:41:08.813Z",
+  "benchmarks": [
+    {
+      "id": "lint-js-eslint-biome-2026-08",
+      "slug": "eslint-vs-biome-javascript-lint",
+      "category": "Code quality",
+      "title": "ESLint vs Biome",
+      "deck": "Four equivalent rule classes over nearly 100,000 lines of JavaScript.",
+      "publishedAt": "2026-08-26",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "biome",
+        "headline": "Biome finished 1.4x faster",
+        "summary": "Biome took 75.2 ms at the median. ESLint took 105.6 ms on the same warmed corpus."
+      },
+      "corpus": {
+        "name": "ESLint 9.34.0 library source",
+        "source": "node_modules/eslint/lib/**/*.js",
+        "files": 391,
+        "lines": 99880,
+        "bytes": 2732670
+      },
+      "environment": {
+        "machine": "MacBook Pro",
+        "chip": "Apple M2 Max",
+        "cores": "12 CPU cores",
+        "memory": "96 GB",
+        "os": "macOS 26.5.2",
+        "arch": "arm64",
+        "runtime": "Bun 1.4.0"
+      },
+      "protocol": {
+        "warmups": 3,
+        "runs": 20,
+        "processModel": "A new CLI process for every measured pass",
+        "cacheState": "Warm filesystem cache after three unmeasured passes",
+        "output": "Diagnostics produced and redirected away from the terminal"
+      },
+      "ruleMap": [
+        {
+          "intent": "Unused variables",
+          "eslint": "no-unused-vars",
+          "biome": "correctness/noUnusedVariables"
+        },
+        {
+          "intent": "Strict equality",
+          "eslint": "eqeqeq",
+          "biome": "suspicious/noDoubleEquals"
+        },
+        {
+          "intent": "Debugger statements",
+          "eslint": "no-debugger",
+          "biome": "suspicious/noDebugger"
+        },
+        {
+          "intent": "Prefer const",
+          "eslint": "prefer-const",
+          "biome": "style/useConst"
+        }
+      ],
+      "candidates": [
+        {
+          "id": "eslint",
+          "name": "ESLint",
+          "version": "9.34.0",
+          "statistics": {
+            "medianMs": 105.6,
+            "meanMs": 106.0,
+            "minMs": 103.5,
+            "maxMs": 108.9
+          },
+          "samplesMs": [108.8, 105.9, 107.2, 107.5, 105.2, 105.5, 105.2, 104.6, 104.2, 108.9, 108.7, 103.5, 104.9, 106.4, 106.9, 105.4, 105.9, 105.6, 105.6, 104.8]
+        },
+        {
+          "id": "biome",
+          "name": "Biome",
+          "version": "2.2.2",
+          "statistics": {
+            "medianMs": 75.2,
+            "meanMs": 75.4,
+            "minMs": 71.5,
+            "maxMs": 79.6
+          },
+          "samplesMs": [75.1, 74.0, 73.6, 72.1, 75.3, 78.7, 79.6, 78.5, 79.4, 76.3, 77.8, 76.2, 74.6, 75.4, 72.8, 75.6, 74.8, 72.5, 75.1, 71.5]
+        }
+      ],
+      "limitations": [
+        "This isolates lint throughput. It does not score rule coverage, editor integrations, migration cost, or ecosystem compatibility.",
+        "The paired rules express the same intent, but their implementations and exact diagnostics are not identical.",
+        "The corpus is ESLint's own JavaScript source and may not represent a typical application repository."
+      ]
+    }
+  ],
+  "queue": [
+    {
+      "category": "Caches",
+      "title": "Redis vs Dragonfly vs KeyDB",
+      "question": "Throughput, tail latency, memory pressure",
+      "status": "Planned"
+    },
+    {
+      "category": "Bundlers",
+      "title": "Vite vs esbuild vs tsup",
+      "question": "Cold builds, rebuilds, output weight",
+      "status": "Planned"
+    },
+    {
+      "category": "Desktop",
+      "title": "Tauri vs Electron",
+      "question": "Startup, idle memory, artifact size",
+      "status": "Planned"
+    },
+    {
+      "category": "Web maps",
+      "title": "MapLibre vs Mapbox",
+      "question": "Frame time, memory, visual parity",
+      "status": "Planned"
+    },
+    {
+      "category": "Tile servers",
+      "title": "Martin vs BBOX",
+      "question": "Cold starts, throughput, operations",
+      "status": "Planned"
+    }
+  ]
+}

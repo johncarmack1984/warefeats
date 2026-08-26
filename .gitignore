@@ -1,0 +1,11 @@
+node_modules/
+dist/
+target/
+.DS_Store
+.env
+.env.*
+!.env.example
+coverage/
+cdk.out/
+infra-outputs.json
+*.tsbuildinfo

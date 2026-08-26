@@ -1,0 +1,19 @@
+{
+  "name": "@warefeats/infra",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "check": "tsc --pretty false",
+    "test": "bun test",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.215.0",
+    "constructs": "10.4.2"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.1029.2"
+  }
+}

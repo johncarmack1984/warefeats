@@ -1,0 +1,25 @@
+{
+  "name": "@warefeats/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "check": "tsc -b --pretty false",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "5.2.6",
+    "@fontsource/ibm-plex-sans": "5.2.6",
+    "@phosphor-icons/react": "2.1.10",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
+    "@vitejs/plugin-react": "5.0.2",
+    "vite": "7.1.3"
+  }
+}

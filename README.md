@@ -1,0 +1,20 @@
+# warefeats
+
+warefeats is a benchmark comparison publication for developer tools and architecture choices. Every conclusion includes the workload, pinned tool versions, test rig, protocol, limitations, and raw samples.
+
+## Workspace
+
+- `web/` contains the React and Vite publication UI plus the versioned benchmark catalog.
+- `services/benchmark-runner/` contains the reproducible local ESLint versus Biome runner.
+- `infra/` contains the AWS CDK stack for private S3 and CloudFront hosting.
+- `.github/workflows/deploy.yml` verifies and deploys every push to `main`.
+
+## Local development
+
+Run `bun install`, then `bun run --cwd web dev` for the site. Run `bun run check`, `bun run test`, and `bun run build` before pushing.
+
+Run `bun run benchmark:lint` for the full 3-warmup, 20-pass benchmark. Use `bun run benchmark:smoke -- --output=/tmp/warefeats-smoke.json` for a short runner check.
+
+## Deployment
+
+The production workflow expects the `AWS_DEPLOY_ROLE_ARN` repository secret and optionally the `AWS_REGION` repository variable. Follow [infra/README.md](infra/README.md) once per AWS account, then every push to `main` deploys the CDK stack, syncs `web/dist`, and invalidates CloudFront.
