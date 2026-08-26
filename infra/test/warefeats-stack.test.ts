@@ -42,5 +42,5 @@ test("keeps the origin private and serves it through CloudFront", () => {
     SubjectAlternativeNames: ["www.warefeats.com"],
   });
 
-  template.resourceCountIs("AWS::Route53::RecordSet", 4);
+  template.resourceCountIs("AWS::Route53::RecordSet", 5);
 });

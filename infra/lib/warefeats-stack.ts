@@ -107,6 +107,12 @@ export class WarefeatsStack extends Stack {
       target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
     });
 
+    new route53.TxtRecord(this, "GoogleSiteVerification", {
+      zone,
+      recordName: DOMAIN,
+      values: ["google-site-verification=kbdd4PhTIpAD2aw4lUTCsmxTpIwa4qk4UZbspA6SF68"],
+    });
+
     new CfnOutput(this, "SiteBucketName", {
       value: siteBucket.bucketName,
       description: "S3 bucket receiving the built web files",
