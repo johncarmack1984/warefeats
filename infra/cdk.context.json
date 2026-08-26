@@ -1,0 +1,10 @@
+{
+  "hosted-zone:account=735853783919:domainName=warefeats.com:region=us-west-1": {
+    "Id": "/hostedzone/Z01772473CSHJHDTZMD3F",
+    "Name": "warefeats.com."
+  },
+  "hosted-zone:account=735853783919:domainName=warefeats.com:region=us-east-1": {
+    "Id": "/hostedzone/Z01772473CSHJHDTZMD3F",
+    "Name": "warefeats.com."
+  }
+}
