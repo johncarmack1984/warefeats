@@ -1,31 +1,35 @@
 import { Moon, Sun } from "@phosphor-icons/react";
-import { useEffect, useState } from "react";
 
 type Theme = "light" | "dark";
 
-function initialTheme(): Theme {
-  const stored = window.localStorage.getItem("warefeats-theme");
-  if (stored === "light" || stored === "dark") {
-    return stored;
+function resolvedTheme(): Theme {
+  const explicit = document.documentElement.dataset.theme;
+  if (explicit === "light" || explicit === "dark") {
+    return explicit;
   }
 
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+/**
+ * The page follows the system appearance; this override lasts for the tab. Both glyphs render and
+ * CSS shows the one for the active theme, so the server and client markup match.
+ */
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(initialTheme);
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    window.localStorage.setItem("warefeats-theme", theme);
-  }, [theme]);
-
-  const nextTheme = theme === "light" ? "dark" : "light";
-  const label = `Use ${nextTheme} theme`;
+  function toggle(): void {
+    const next: Theme = resolvedTheme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try {
+      window.sessionStorage.setItem("warefeats-theme", next);
+    } catch {
+      /* Storage is unavailable; the choice lasts until the next navigation. */
+    }
+  }
 
   return (
-    <button className="icon-button" type="button" aria-label={label} title={label} onClick={() => setTheme(nextTheme)}>
-      {theme === "light" ? <Moon aria-hidden="true" /> : <Sun aria-hidden="true" />}
+    <button className="icon-button theme-toggle" type="button" aria-label="Switch between light and dark theme" title="Switch theme" onClick={toggle}>
+      <Moon className="theme-glyph theme-glyph-light" aria-hidden="true" />
+      <Sun className="theme-glyph theme-glyph-dark" aria-hidden="true" />
     </button>
   );
 }

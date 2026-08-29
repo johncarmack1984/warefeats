@@ -1,30 +1,69 @@
 import { describe, expect, test } from "bun:test";
 import { parseCatalog } from "../src/catalog";
-import { samplePosition, speedup } from "../src/metrics";
+import { headTags, normalizePath, prerenderPaths, routeMeta } from "../src/head";
+import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, standardDeviation, summarize } from "../src/metrics";
+
+async function loadCatalog() {
+  const file = Bun.file(new URL("../public/data/benchmarks.json", import.meta.url));
+  return parseCatalog(await file.json());
+}
 
 describe("benchmark catalog", () => {
   test("loads the published catalog", async () => {
-    const file = Bun.file(new URL("../public/data/benchmarks.json", import.meta.url));
-    const catalog = parseCatalog(await file.json());
+    const catalog = await loadCatalog();
 
     expect(catalog.schemaVersion).toBe(1);
     expect(catalog.benchmarks).toHaveLength(1);
     expect(catalog.benchmarks[0]?.candidates).toHaveLength(2);
   });
 
-  test("derives the published median speedup from candidate values", async () => {
-    const file = Bun.file(new URL("../public/data/benchmarks.json", import.meta.url));
-    const catalog = parseCatalog(await file.json());
-    const benchmark = catalog.benchmarks[0];
+  test("summarizes the winner against every other candidate with a propagated sigma", async () => {
+    const catalog = await loadCatalog();
+    const summary = summarize(catalog.benchmarks[0]!);
 
-    expect(benchmark).toBeDefined();
-    expect(speedup(benchmark!)).toBe(1.4);
+    expect(summary.winner.id).toBe("biome");
+    expect(summary.comparisons).toHaveLength(1);
+    expect(summary.comparisons[0]?.ratio).toBeCloseTo(106.0 / 75.4, 3);
+    expect(summary.comparisons[0]?.sigma).toBeGreaterThan(0);
+    expect(summary.comparisons[0]?.sigma).toBeLessThan(0.1);
   });
 
-  test("positions samples within their own observed range", () => {
-    expect(samplePosition(10, [10, 15, 20])).toBe(0);
-    expect(samplePosition(15, [10, 15, 20])).toBe(50);
-    expect(samplePosition(20, [10, 15, 20])).toBe(100);
+  test("renders the report in hyperfine's shape", async () => {
+    const catalog = await loadCatalog();
+    const text = reportText(catalog.benchmarks[0]!);
+
+    expect(text).toContain("Benchmark 1: ESLint 9.34.0");
+    expect(text).toContain("Time (mean ± σ)");
+    expect(text).toContain("Biome 2.2.2 ran");
+    expect(text).toMatch(/1\.4\d ± 0\.0\d times faster than ESLint 9\.34\.0/);
+  });
+
+  test("charts no bar tests unless the catalog declares them", async () => {
+    const catalog = await loadCatalog();
+    expect(benchmarkTests(catalog.benchmarks[0]!)).toEqual([]);
+  });
+
+  test("computes the five-number summary with interpolated quartiles", () => {
+    expect(fiveNumber([1, 2, 3, 4, 5, 6, 7, 8])).toEqual({ min: 1, q1: 2.75, median: 4.5, q3: 6.25, max: 8 });
+    expect(fiveNumber([5])).toEqual({ min: 5, q1: 5, median: 5, q3: 5, max: 5 });
+  });
+
+  test("positions samples within the shared range", () => {
+    expect(samplePosition(10, 10, 20)).toBe(0);
+    expect(samplePosition(15, 10, 20)).toBe(50);
+    expect(samplePosition(20, 10, 20)).toBe(100);
+  });
+
+  test("computes a sample standard deviation", () => {
+    expect(standardDeviation([2, 4, 4, 4, 5, 5, 7, 9])).toBeCloseTo(2.138, 3);
+    expect(standardDeviation([5])).toBe(0);
+  });
+
+  test("picks friendly axis ticks", () => {
+    const ticks = axisTicks(71, 110, 6);
+    expect(ticks[0]).toBeGreaterThanOrEqual(71);
+    expect(ticks[ticks.length - 1]).toBeLessThanOrEqual(110);
+    expect(ticks.length).toBeGreaterThanOrEqual(4);
   });
 });
 
@@ -35,5 +74,55 @@ describe("catalog validation", () => {
 
   test("rejects comparisons with fewer than two candidates", () => {
     expect(() => parseCatalog({ schemaVersion: 1, queue: [], benchmarks: [{ id: "one", title: "One", candidates: [] }] })).toThrow("at least two candidates");
+  });
+});
+
+describe("routes", () => {
+  test("normalizes paths to a trailing slash", () => {
+    expect(normalizePath("/")).toBe("/");
+    expect(normalizePath("/about")).toBe("/about/");
+    expect(normalizePath("/about/?x=1")).toBe("/about/");
+  });
+
+  test("prerenders one page per benchmark plus the fixed pages", async () => {
+    const catalog = await loadCatalog();
+    expect(prerenderPaths(catalog)).toEqual(["/", "/methodology/", "/about/", "/benchmarks/eslint-vs-biome-javascript-lint/"]);
+  });
+
+  test("builds benchmark metadata from the catalog", async () => {
+    const catalog = await loadCatalog();
+    const meta = routeMeta("/benchmarks/eslint-vs-biome-javascript-lint", catalog);
+
+    expect(meta.status).toBe(200);
+    expect(meta.title).toBe("ESLint vs Biome | warefeats");
+    expect(meta.description).toContain("Biome 2.2.2 ran");
+    expect(headTags(meta)).toContain('<link rel="canonical" href="https://warefeats.com/benchmarks/eslint-vs-biome-javascript-lint/" />');
+    expect(meta.image).toBe("https://warefeats.com/og/eslint-vs-biome-javascript-lint.png");
+    expect(headTags(meta)).toContain('<meta property="og:image" content="https://warefeats.com/og/eslint-vs-biome-javascript-lint.png" />');
+  });
+
+  test("marks unknown routes as not found", async () => {
+    const catalog = await loadCatalog();
+    const meta = routeMeta("/benchmarks/nope", catalog);
+
+    expect(meta.status).toBe(404);
+    expect(headTags(meta)).toContain('name="robots" content="noindex"');
+  });
+});
+
+describe("open graph cards", () => {
+  test("renders the benchmark card with the ratio", async () => {
+    const { benchmarkCard } = await import("../src/og");
+    const font = async (name: string) => {
+      const bytes = await Bun.file(new URL(`../assets/fonts/${name}`, import.meta.url)).arrayBuffer();
+      return bytes;
+    };
+    const fonts = { mono500: await font("MartianMono-500.ttf"), mono700: await font("MartianMono-700.ttf"), sans500: await font("RedHatText-500.ttf") };
+    const catalog = await loadCatalog();
+    const svg = await benchmarkCard(catalog.benchmarks[0]!, fonts);
+
+    expect(svg.startsWith("<svg")).toBe(true);
+    expect(svg).toContain('width="1200"');
+    expect(svg).toContain('height="630"');
   });
 });

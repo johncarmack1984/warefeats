@@ -60,6 +60,23 @@ export class WarefeatsStack extends Stack {
       },
     });
 
+    // Prerendered pages live at <route>/index.html; S3 through OAC does not resolve directory indexes.
+    const indexRewrite = new cloudfront.Function(this, "IndexRewrite", {
+      functionName: "warefeats-index-rewrite",
+      comment: "Maps extensionless routes to their prerendered index.html",
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+      code: cloudfront.FunctionCode.fromInline(`function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+  if (uri.endsWith("/")) {
+    request.uri = uri + "index.html";
+  } else if (uri.lastIndexOf(".") <= uri.lastIndexOf("/")) {
+    request.uri = uri + "/index.html";
+  }
+  return request;
+}`),
+    });
+
     const distribution = new cloudfront.Distribution(this, "Distribution", {
       defaultRootObject: "index.html",
       domainNames: [DOMAIN, `www.${DOMAIN}`],
@@ -76,6 +93,7 @@ export class WarefeatsStack extends Stack {
         compress: true,
         responseHeadersPolicy,
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        functionAssociations: [{ function: indexRewrite, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST }],
       },
       errorResponses: [
         { httpStatus: 403, responseHttpStatus: 200, responsePagePath: "/index.html", ttl: Duration.minutes(1) },

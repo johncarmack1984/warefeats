@@ -4,9 +4,12 @@
     "composite": true,
     "types": [
       "bun"
-    ]
+    ],
+    "jsx": "react-jsx"
   },
   "include": [
-    "vite.config.ts"
+    "vite.config.ts",
+    "src",
+    "scripts"
   ]
 }

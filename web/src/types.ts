@@ -44,19 +44,41 @@ export interface Benchmark {
   };
   ruleMap: RuleMapping[];
   candidates: Candidate[];
+  /** Individual tests, each charted on its own. Absent entries derive four from the timing statistics. */
+  tests?: BenchmarkTest[];
   limitations: string[];
 }
 
+/** One charted test in the barefeats sense: a title, what was measured, and one value per candidate. */
+export interface BenchmarkTest {
+  id: string;
+  title: string;
+  description: string;
+  unit: string;
+  lowerIsBetter: boolean;
+  results: TestResult[];
+}
+
+export interface TestResult {
+  candidateId: string;
+  value: number;
+}
+
+/** One matched intent; every other key is a candidate id mapped to that candidate's rule name. */
 export interface RuleMapping {
   intent: string;
-  eslint: string;
-  biome: string;
+  [candidateId: string]: string;
 }
 
 export interface Candidate {
   id: string;
   name: string;
   version: string;
+  /** Site-relative path to the product's logo, self-hosted under public/logos. */
+  logo?: string;
+  /** The product's brand color as a hex string; charts mix it per theme for contrast. */
+  color?: string;
+  homepage?: string;
   statistics: Statistics;
   samplesMs: number[];
 }

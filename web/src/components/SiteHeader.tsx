@@ -1,23 +1,25 @@
-import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react";
+import { GithubLogo } from "@phosphor-icons/react";
+import { NavLink } from "react-router";
 import { ThemeToggle } from "./ThemeToggle";
+
+export const REPO_URL = "https://github.com/johncarmack1984/warefeats";
 
 export function SiteHeader() {
   return (
     <header className="site-header">
-      <a className="wordmark" href="#top" aria-label="warefeats home">
-        <span className="wordmark-mark" aria-hidden="true">wf</span>
+      <NavLink className="wordmark" to="/" aria-label="warefeats home" end>
+        <span className="wordmark-prompt" aria-hidden="true">$</span>
         <span>warefeats</span>
-      </a>
-      <nav className="primary-nav" aria-label="Primary navigation">
-        <a href="#latest">Latest</a>
-        <a href="#method">Method</a>
-        <a href="#queue">Queue</a>
+      </NavLink>
+      <nav className="primary-nav" aria-label="Primary">
+        <NavLink to="/" end>Benchmarks</NavLink>
+        <NavLink to="/methodology">Methodology</NavLink>
+        <NavLink to="/about">About</NavLink>
       </nav>
       <div className="header-actions">
-        <a className="github-link" href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">
+        <a className="github-link" href={REPO_URL} target="_blank" rel="noreferrer">
           <GithubLogo aria-hidden="true" />
           <span>Source</span>
-          <ArrowUpRight aria-hidden="true" />
         </a>
         <ThemeToggle />
       </div>
