@@ -1,0 +1,1935 @@
+{
+  "generatedAt": "2026-08-29T23:29:58.795Z",
+  "smoke": false,
+  "sessionCount": 30,
+  "resultCount": 30,
+  "failureCount": 0,
+  "results": [
+    {
+      "label": "varnish/plaintext/hit-path-rps",
+      "engine": "varnish",
+      "topology": "plaintext",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833,
+        25.861833
+      ],
+      "p50Ms": 0.6512920000000001,
+      "p99Ms": 25.861833,
+      "achievedRps": 4999.570297460565,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 149.3,
+        "cacheHits": 115001,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999826091493266
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.651,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 25.862,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.6,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 149.3,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "varnish/plaintext/segment-serve",
+      "engine": "varnish",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951,
+        2.951
+      ],
+      "p50Ms": 2.15225,
+      "p99Ms": 2.951,
+      "achievedRps": 500.03568150885735,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 95.9,
+        "cacheHits": 126507,
+        "cacheMisses": 2,
+        "hitRatio": 0.999984190848082
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 2.152,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.951,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "varnish/plaintext/segment-serve",
+      "engine": "varnish",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999,
+        1.3539999999999999
+      ],
+      "p50Ms": 0.619167,
+      "p99Ms": 1.3539999999999999,
+      "achievedRps": 500.0029879971623,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 95.9,
+        "cacheHits": 126507,
+        "cacheMisses": 2,
+        "hitRatio": 0.999984190848082
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.619,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 1.354,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "varnish/plaintext/origin-flap",
+      "engine": "varnish",
+      "topology": "plaintext",
+      "workload": "origin-flap",
+      "samplesMs": [
+        5.969041,
+        6.331207999999999,
+        6.953791,
+        5.45325,
+        6.205792,
+        6.534375,
+        6.082042,
+        6.071041,
+        7.150125,
+        6.540208,
+        5.442167,
+        6.0897499999999996,
+        6.539291,
+        6.037542,
+        5.312792
+      ],
+      "p50Ms": 6.0897499999999996,
+      "p99Ms": 7.12263824,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 94.34,
+        "cacheHits": 30005,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999333488852601
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 6.09,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 7.123,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "grace_served": {
+          "value": 10000,
+          "unit": "",
+          "label": "Grace responses during flap"
+        },
+        "errors_served": {
+          "value": 0,
+          "unit": "",
+          "label": "Error responses during flap"
+        },
+        "grace_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Grace hit ratio"
+        },
+        "rss_mb": {
+          "value": 94.3,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    },
+    {
+      "label": "varnish/tls-inprocess/hit-path-rps",
+      "engine": "varnish",
+      "topology": "tls-inprocess",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792,
+        3.192792
+      ],
+      "p50Ms": 0.685125,
+      "p99Ms": 3.192792,
+      "achievedRps": 4999.482639651824,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 103.6,
+        "cacheHits": 114998,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999826086956521
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.685,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 3.193,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.5,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 103.6,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "varnish/tls-inprocess/segment-serve",
+      "engine": "varnish",
+      "topology": "tls-inprocess",
+      "workload": "segment-serve",
+      "samplesMs": [
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999,
+        8.646374999999999
+      ],
+      "p50Ms": 3.492291,
+      "p99Ms": 8.646374999999999,
+      "achievedRps": 500.0305780154682,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 105.7,
+        "cacheHits": 126504,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841904731791
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 3.492,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 8.646,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "varnish/tls-inprocess/segment-serve",
+      "engine": "varnish",
+      "topology": "tls-inprocess",
+      "workload": "segment-serve",
+      "samplesMs": [
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917,
+        3.050917
+      ],
+      "p50Ms": 0.988708,
+      "p99Ms": 3.050917,
+      "achievedRps": 500.0138207237237,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 105.7,
+        "cacheHits": 126504,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841904731791
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.989,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 3.051,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "varnish/proxyv2-haproxy/hit-path-rps",
+      "engine": "varnish",
+      "topology": "proxyv2-haproxy",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583,
+        3.071583
+      ],
+      "p50Ms": 0.7374999999999999,
+      "p99Ms": 3.071583,
+      "achievedRps": 4999.445508474946,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 98.44,
+        "cacheHits": 114998,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999826086956521
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.737,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 3.072,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.4,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 98.4,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "varnish/proxyv2-haproxy/segment-serve",
+      "engine": "varnish",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083,
+        24.750083
+      ],
+      "p50Ms": 4.705542,
+      "p99Ms": 24.750083,
+      "achievedRps": 500.0153514842771,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 100.3,
+        "cacheHits": 126504,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841904731791
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 4.706,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 24.75,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "varnish/proxyv2-haproxy/segment-serve",
+      "engine": "varnish",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002,
+        3.5754580000000002
+      ],
+      "p50Ms": 1.1091250000000001,
+      "p99Ms": 3.5754580000000002,
+      "achievedRps": 500.0088137150509,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 100.3,
+        "cacheHits": 126504,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841904731791
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 1.109,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 3.575,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "vinyl/plaintext/hit-path-rps",
+      "engine": "vinyl",
+      "topology": "plaintext",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525,
+        4.28525
+      ],
+      "p50Ms": 0.6670419999999999,
+      "p99Ms": 4.28525,
+      "achievedRps": 4999.422480169306,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 107.4,
+        "cacheHits": 115002,
+        "cacheMisses": 2,
+        "hitRatio": 0.999982609300546
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.667,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 4.285,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.4,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 107.4,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "vinyl/plaintext/segment-serve",
+      "engine": "vinyl",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917,
+        2.715917
+      ],
+      "p50Ms": 1.860708,
+      "p99Ms": 2.715917,
+      "achievedRps": 500.0340700111392,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 109.4,
+        "cacheHits": 126508,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841909730456
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 1.861,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.716,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "vinyl/plaintext/segment-serve",
+      "engine": "vinyl",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003,
+        2.3882920000000003
+      ],
+      "p50Ms": 0.6772090000000001,
+      "p99Ms": 2.3882920000000003,
+      "achievedRps": 500.058133431828,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 109.4,
+        "cacheHits": 126508,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841909730456
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.677,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 2.388,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500.1,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "vinyl/plaintext/origin-flap",
+      "engine": "vinyl",
+      "topology": "plaintext",
+      "workload": "origin-flap",
+      "samplesMs": [
+        7.872209,
+        5.480625,
+        5.647958,
+        6.609334,
+        5.660584,
+        6.199458,
+        5.91775,
+        5.6865,
+        5.458458,
+        6.013458,
+        5.970292000000001,
+        6.35925,
+        5.8792089999999995,
+        5.968542,
+        5.800916
+      ],
+      "p50Ms": 5.91775,
+      "p99Ms": 7.695406499999999,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 106.6,
+        "cacheHits": 30005,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999333488852601
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 5.918,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 7.695,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "grace_served": {
+          "value": 9999,
+          "unit": "",
+          "label": "Grace responses during flap"
+        },
+        "errors_served": {
+          "value": 0,
+          "unit": "",
+          "label": "Error responses during flap"
+        },
+        "grace_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Grace hit ratio"
+        },
+        "rss_mb": {
+          "value": 106.6,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    },
+    {
+      "label": "vinyl/proxyv2-haproxy/hit-path-rps",
+      "engine": "vinyl",
+      "topology": "proxyv2-haproxy",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291,
+        2.839291
+      ],
+      "p50Ms": 0.634916,
+      "p99Ms": 2.839291,
+      "achievedRps": 4999.534812716646,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 109.4,
+        "cacheHits": 115002,
+        "cacheMisses": 2,
+        "hitRatio": 0.999982609300546
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.635,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.839,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.5,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 109.4,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "vinyl/proxyv2-haproxy/segment-serve",
+      "engine": "vinyl",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996,
+        37.902499999999996
+      ],
+      "p50Ms": 4.8761660000000004,
+      "p99Ms": 37.902499999999996,
+      "achievedRps": 500.06023862931545,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 109.4,
+        "cacheHits": 126508,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841909730456
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 4.876,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 37.902,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500.1,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "vinyl/proxyv2-haproxy/segment-serve",
+      "engine": "vinyl",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997,
+        2.9754579999999997
+      ],
+      "p50Ms": 1.0875,
+      "p99Ms": 2.9754579999999997,
+      "achievedRps": 500.01321476538857,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 109.4,
+        "cacheHits": 126508,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841909730456
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 1.088,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 2.975,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "nginx/plaintext/hit-path-rps",
+      "engine": "nginx",
+      "topology": "plaintext",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997,
+        2.9342919999999997
+      ],
+      "p50Ms": 0.712792,
+      "p99Ms": 2.9342919999999997,
+      "achievedRps": 4999.4500813595905,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.695,
+        "cacheHits": 114943,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999826003740919
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.713,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.934,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.5,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 5.7,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "nginx/plaintext/segment-serve",
+      "engine": "nginx",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001,
+        5.954667000000001
+      ],
+      "p50Ms": 2.0082910000000003,
+      "p99Ms": 5.954667000000001,
+      "achievedRps": 500.0454364446848,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.656,
+        "cacheHits": 126449,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841835968083
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 2.008,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 5.955,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "nginx/plaintext/segment-serve",
+      "engine": "nginx",
+      "topology": "plaintext",
+      "workload": "segment-serve",
+      "samplesMs": [
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002,
+        3.3904170000000002
+      ],
+      "p50Ms": 0.802125,
+      "p99Ms": 3.3904170000000002,
+      "achievedRps": 500.00398246802973,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.656,
+        "cacheHits": 126449,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841835968083
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.802,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 3.39,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "nginx/plaintext/origin-flap",
+      "engine": "nginx",
+      "topology": "plaintext",
+      "workload": "origin-flap",
+      "samplesMs": [
+        5.397667,
+        6.605208,
+        5.659375000000001,
+        5.08175,
+        5.622333,
+        5.860291999999999,
+        5.936,
+        5.478125,
+        5.748292,
+        6.267792,
+        6.043375,
+        6.414458,
+        6.8365,
+        5.949833,
+        5.408709
+      ],
+      "p50Ms": 5.860291999999999,
+      "p99Ms": 6.80411912,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.941,
+        "cacheHits": 29999,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999333355554815
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 5.86,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 6.804,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "grace_served": {
+          "value": 10000,
+          "unit": "",
+          "label": "Grace responses during flap"
+        },
+        "errors_served": {
+          "value": 0,
+          "unit": "",
+          "label": "Error responses during flap"
+        },
+        "grace_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Grace hit ratio"
+        },
+        "rss_mb": {
+          "value": 5.9,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    },
+    {
+      "label": "nginx/tls-inprocess/hit-path-rps",
+      "engine": "nginx",
+      "topology": "tls-inprocess",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875,
+        2.493875
+      ],
+      "p50Ms": 0.71675,
+      "p99Ms": 2.493875,
+      "achievedRps": 4999.590377691272,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 8.316,
+        "cacheHits": 114884,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999825914384695
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.717,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.494,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.6,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 8.3,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "nginx/tls-inprocess/segment-serve",
+      "engine": "nginx",
+      "topology": "tls-inprocess",
+      "workload": "segment-serve",
+      "samplesMs": [
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542,
+        82.673542
+      ],
+      "p50Ms": 10.432291,
+      "p99Ms": 82.673542,
+      "achievedRps": 500.0159393395149,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 8.375,
+        "cacheHits": 126390,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841762136844
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 10.432,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 82.674,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "nginx/tls-inprocess/segment-serve",
+      "engine": "nginx",
+      "topology": "tls-inprocess",
+      "workload": "segment-serve",
+      "samplesMs": [
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792,
+        3.813792
+      ],
+      "p50Ms": 0.930875,
+      "p99Ms": 3.813792,
+      "achievedRps": 500.00043202802306,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 8.375,
+        "cacheHits": 126390,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841762136844
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.931,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 3.814,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "nginx/proxyv2-haproxy/hit-path-rps",
+      "engine": "nginx",
+      "topology": "proxyv2-haproxy",
+      "workload": "hit-path-rps",
+      "samplesMs": [
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166,
+        2.130166
+      ],
+      "p50Ms": 0.749916,
+      "p99Ms": 2.130166,
+      "achievedRps": 4999.486710698139,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.426,
+        "cacheHits": 114943,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999826003740919
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 0.75,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2.13,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 4999.5,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        },
+        "rss_mb": {
+          "value": 5.4,
+          "unit": "MB",
+          "label": "Engine RSS"
+        },
+        "hit_ratio": {
+          "value": 100,
+          "unit": "%",
+          "label": "Hit ratio"
+        }
+      }
+    },
+    {
+      "label": "nginx/proxyv2-haproxy/segment-serve",
+      "engine": "nginx",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583,
+        14.834583
+      ],
+      "p50Ms": 5.033250000000001,
+      "p99Ms": 14.834583,
+      "achievedRps": 500.00892329636605,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.984,
+        "cacheHits": 126449,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841835968083
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 5.033,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 14.835,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS"
+        },
+        "error_rate": {
+          "value": 0,
+          "unit": "%",
+          "label": "Error rate"
+        }
+      }
+    },
+    {
+      "label": "nginx/proxyv2-haproxy/segment-serve",
+      "engine": "nginx",
+      "topology": "proxyv2-haproxy",
+      "workload": "segment-serve",
+      "samplesMs": [
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875,
+        4.005875
+      ],
+      "p50Ms": 1.1226669999999999,
+      "p99Ms": 4.005875,
+      "achievedRps": 499.9643824608838,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 5.984,
+        "cacheHits": 126449,
+        "cacheMisses": 2,
+        "hitRatio": 0.9999841835968083
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 1.123,
+          "unit": "ms",
+          "label": "p50 TTFB (Range)"
+        },
+        "p99_ttfb": {
+          "value": 4.006,
+          "unit": "ms",
+          "label": "p99 TTFB (Range)"
+        },
+        "achieved_rps": {
+          "value": 500,
+          "unit": "rps",
+          "label": "Achieved RPS (Range)"
+        },
+        "variant": {
+          "value": 1,
+          "unit": "",
+          "label": "Range GET"
+        }
+      }
+    },
+    {
+      "label": "varnish/plaintext/miss-storm",
+      "engine": "varnish",
+      "topology": "plaintext",
+      "workload": "miss-storm",
+      "samplesMs": [
+        1058.437375,
+        1074.82125,
+        379.556333,
+        1091.462583,
+        312.906792,
+        271.146,
+        1044.093042,
+        289.834291,
+        1130.559208,
+        1087.364458,
+        236.874208,
+        289.240875,
+        307.9975,
+        1076.340625,
+        1066.973459,
+        351.540792,
+        3083.735875,
+        297.36229199999997,
+        1071.873709,
+        1086.973584
+      ],
+      "p50Ms": 1051.2652085,
+      "p99Ms": 2712.6323082699973,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 196.6,
+        "cacheHits": 3980,
+        "cacheMisses": 21,
+        "hitRatio": 0.994751312171957
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 1051.265,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2712.632,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "avg_origin_requests": {
+          "value": 1,
+          "unit": "",
+          "label": "Avg origin requests per burst"
+        },
+        "coalescing_efficiency": {
+          "value": 200,
+          "unit": "x",
+          "label": "Coalescing efficiency"
+        },
+        "total_origin_requests": {
+          "value": 20,
+          "unit": "",
+          "label": "Total origin requests"
+        },
+        "rss_mb": {
+          "value": 196.6,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    },
+    {
+      "label": "vinyl/plaintext/miss-storm",
+      "engine": "vinyl",
+      "topology": "plaintext",
+      "workload": "miss-storm",
+      "samplesMs": [
+        1047.066625,
+        267.25229099999996,
+        1267.0940420000002,
+        1080.188417,
+        279.024417,
+        332.292333,
+        289.087333,
+        1083.8157079999999,
+        1022.065,
+        284.696375,
+        1093.6044169999998,
+        276.290375,
+        1030.988333,
+        1059.201125,
+        415.849084,
+        465.071375,
+        1148.9465830000001,
+        306.248583,
+        1056.439541,
+        268.81175
+      ],
+      "p50Ms": 743.5681875,
+      "p99Ms": 1244.64602479,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 270,
+        "cacheHits": 3980,
+        "cacheMisses": 21,
+        "hitRatio": 0.994751312171957
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 743.568,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 1244.646,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "avg_origin_requests": {
+          "value": 1,
+          "unit": "",
+          "label": "Avg origin requests per burst"
+        },
+        "coalescing_efficiency": {
+          "value": 200,
+          "unit": "x",
+          "label": "Coalescing efficiency"
+        },
+        "total_origin_requests": {
+          "value": 20,
+          "unit": "",
+          "label": "Total origin requests"
+        },
+        "rss_mb": {
+          "value": 270,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    },
+    {
+      "label": "nginx/plaintext/miss-storm",
+      "engine": "nginx",
+      "topology": "plaintext",
+      "workload": "miss-storm",
+      "samplesMs": [
+        871.1286670000001,
+        1074.392083,
+        676.4880840000001,
+        755.382459,
+        1079.62525,
+        648.7125,
+        1059.8524579999998,
+        1057.636792,
+        3103.646667,
+        798.434542,
+        758.032542,
+        1061.150625,
+        646.863959,
+        668.636708,
+        770.072,
+        1066.4353330000001,
+        656.3997499999999,
+        1072.3004170000002,
+        1069.984875,
+        837.073042
+      ],
+      "p50Ms": 854.1008545,
+      "p99Ms": 2719.0825977699974,
+      "achievedRps": 0,
+      "errorRate": 0,
+      "engineStats": {
+        "rssMb": 8.176,
+        "cacheHits": 3980,
+        "cacheMisses": 21,
+        "hitRatio": 0.994751312171957
+      },
+      "metrics": {
+        "p50_ttfb": {
+          "value": 854.101,
+          "unit": "ms",
+          "label": "p50 TTFB"
+        },
+        "p99_ttfb": {
+          "value": 2719.083,
+          "unit": "ms",
+          "label": "p99 TTFB"
+        },
+        "avg_origin_requests": {
+          "value": 1,
+          "unit": "",
+          "label": "Avg origin requests per burst"
+        },
+        "coalescing_efficiency": {
+          "value": 200,
+          "unit": "x",
+          "label": "Coalescing efficiency"
+        },
+        "total_origin_requests": {
+          "value": 20,
+          "unit": "",
+          "label": "Total origin requests"
+        },
+        "rss_mb": {
+          "value": 8.2,
+          "unit": "MB",
+          "label": "Engine RSS"
+        }
+      }
+    }
+  ],
+  "failures": []
+}

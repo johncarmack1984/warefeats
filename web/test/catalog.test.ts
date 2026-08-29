@@ -13,8 +13,8 @@ describe("benchmark catalog", () => {
     const catalog = await loadCatalog();
 
     expect(catalog.schemaVersion).toBe(1);
-    expect(catalog.benchmarks).toHaveLength(1);
-    expect(catalog.benchmarks[0]?.candidates).toHaveLength(2);
+    expect(catalog.benchmarks.length).toBeGreaterThanOrEqual(1);
+    expect(catalog.benchmarks[0]?.candidates.length).toBeGreaterThanOrEqual(2);
   });
 
   test("summarizes the winner against every other candidate with a propagated sigma", async () => {
@@ -72,6 +72,33 @@ describe("catalog validation", () => {
     expect(() => parseCatalog({ schemaVersion: 2, benchmarks: [], queue: [] })).toThrow("unsupported shape");
   });
 
+  test("accepts benchmarks without corpus or ruleMap", () => {
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-29T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "proxy-bench-test",
+        slug: "proxy-bench-test",
+        category: "Caching proxies",
+        title: "Test",
+        deck: "Test benchmark",
+        publishedAt: "2026-08-29",
+        unit: "ms",
+        lowerIsBetter: true,
+        verdict: { winnerId: "a", headline: "A wins", summary: "A is faster" },
+        environment: { machine: "Test", chip: "Test", cores: "1", memory: "1 GB", os: "Test", arch: "arm64", runtime: "Docker" },
+        protocol: { warmups: 3, runs: 20, processModel: "container", cacheState: "warm", output: "TTFB" },
+        candidates: [
+          { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1], configuration: { engine: "varnish", topology: "plaintext", workload: "hit-path-rps", targetRps: 5000 }, metrics: { p50: { value: 1, unit: "ms" } } },
+          { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+        ],
+        limitations: ["Test only"],
+      }],
+    });
+    expect(catalog.benchmarks[0]!.id).toBe("proxy-bench-test");
+  });
+
   test("rejects comparisons with fewer than two candidates", () => {
     expect(() => parseCatalog({ schemaVersion: 1, queue: [], benchmarks: [{ id: "one", title: "One", candidates: [] }] })).toThrow("at least two candidates");
   });
@@ -86,7 +113,11 @@ describe("routes", () => {
 
   test("prerenders one page per benchmark plus the fixed pages", async () => {
     const catalog = await loadCatalog();
-    expect(prerenderPaths(catalog)).toEqual(["/", "/methodology/", "/about/", "/benchmarks/eslint-vs-biome-javascript-lint/"]);
+    const paths = prerenderPaths(catalog);
+    expect(paths).toContain("/");
+    expect(paths).toContain("/methodology/");
+    expect(paths).toContain("/about/");
+    expect(paths).toContain("/benchmarks/eslint-vs-biome-javascript-lint/");
   });
 
   test("builds benchmark metadata from the catalog", async () => {

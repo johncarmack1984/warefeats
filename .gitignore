@@ -9,3 +9,8 @@ coverage/
 cdk.out/
 infra-outputs.json
 *.tsbuildinfo
+
+# Local Claude Code config
+CLAUDE.md
+CLAUDE.local.md
+.claude/

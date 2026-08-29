@@ -9,8 +9,10 @@
   ],
   "scripts": {
     "build": "bun run --cwd web build",
-    "check": "bun run --cwd web check && bun run --cwd services/benchmark-runner check && bun run --cwd infra check",
-    "test": "bun run --cwd web test && bun run --cwd services/benchmark-runner test && bun run --cwd infra test",
+    "check": "bun run --cwd web check && bun run --cwd services/benchmark-runner check && bun run --cwd services/proxy-bench check && bun run --cwd infra check",
+    "test": "bun run --cwd web test && bun run --cwd services/benchmark-runner test && bun run --cwd services/proxy-bench test && bun run --cwd infra test",
+    "benchmark:proxy": "bun run --cwd services/proxy-bench bench",
+    "benchmark:proxy-smoke": "bun run --cwd services/proxy-bench smoke",
     "benchmark:lint": "bun run --cwd services/benchmark-runner benchmark",
     "benchmark:smoke": "bun run --cwd services/benchmark-runner benchmark --quick",
     "infra:synth": "bun run --cwd infra synth",

@@ -1,0 +1,45 @@
+services:
+  origin:
+    build:
+      context: ../origin
+    expose:
+      - "3000"
+    ports:
+      - "${ORIGIN_PORT:-3100}:3000"
+    environment:
+      ORIGIN_LATENCY_MS: "${ORIGIN_LATENCY_MS:-0}"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/_health"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  engine:
+    build:
+      context: /Users/johncarmack/coding/varnish/vinyl-cache
+      dockerfile: /Users/johncarmack/coding/johncarmack1984/warefeats/services/proxy-bench/Dockerfile.vinyl
+    command:
+      - "-a"
+      - "http=:80,HTTP"
+      - "-f"
+      - "/etc/varnish/default.vcl"
+      - "-s"
+      - "malloc,256m"
+      - "-p"
+      - "thread_pools=2"
+      - "-p"
+      - "thread_pool_min=50"
+      - "-p"
+      - "thread_pool_max=200"
+    volumes:
+      - ../configs/vinyl/default.vcl:/etc/varnish/default.vcl:ro
+    ports:
+      - "${ENGINE_PORT:-6081}:80"
+    depends_on:
+      origin:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 512M

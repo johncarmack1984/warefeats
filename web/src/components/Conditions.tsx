@@ -22,14 +22,16 @@ export function Conditions({ benchmark }: ConditionsProps) {
           <div><dt>OS</dt><dd>{environment.os} ({environment.arch})</dd></div>
           <div><dt>Runtime</dt><dd>{environment.runtime}</dd></div>
         </dl>
-        <dl className="kv">
-          <div className="kv-group">Corpus</div>
-          <div><dt>Name</dt><dd>{corpus.name}</dd></div>
-          <div><dt>Source</dt><dd><code>{corpus.source}</code></dd></div>
-          <div><dt>Files</dt><dd className="num">{formatInteger(corpus.files)}</dd></div>
-          <div><dt>Lines</dt><dd className="num">{formatInteger(corpus.lines)}</dd></div>
-          <div><dt>Size</dt><dd className="num">{formatBytes(corpus.bytes)}</dd></div>
-        </dl>
+        {corpus ? (
+          <dl className="kv">
+            <div className="kv-group">Corpus</div>
+            <div><dt>Name</dt><dd>{corpus.name}</dd></div>
+            <div><dt>Source</dt><dd><code>{corpus.source}</code></dd></div>
+            <div><dt>Files</dt><dd className="num">{formatInteger(corpus.files)}</dd></div>
+            <div><dt>Lines</dt><dd className="num">{formatInteger(corpus.lines)}</dd></div>
+            <div><dt>Size</dt><dd className="num">{formatBytes(corpus.bytes)}</dd></div>
+          </dl>
+        ) : null}
         <dl className="kv">
           <div className="kv-group">Protocol</div>
           <div><dt>Warmups</dt><dd className="num">{protocol.warmups} unmeasured passes</dd></div>

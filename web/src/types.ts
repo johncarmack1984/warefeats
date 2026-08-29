@@ -19,7 +19,7 @@ export interface Benchmark {
     headline: string;
     summary: string;
   };
-  corpus: {
+  corpus?: {
     name: string;
     source: string;
     files: number;
@@ -42,7 +42,7 @@ export interface Benchmark {
     cacheState: string;
     output: string;
   };
-  ruleMap: RuleMapping[];
+  ruleMap?: RuleMapping[];
   candidates: Candidate[];
   /** Individual tests, each charted on its own. Absent entries derive four from the timing statistics. */
   tests?: BenchmarkTest[];
@@ -81,6 +81,14 @@ export interface Candidate {
   homepage?: string;
   statistics: Statistics;
   samplesMs: number[];
+  configuration?: {
+    engine: string;
+    topology: "plaintext" | "tls-inprocess" | "proxyv2-haproxy";
+    workload: "hit-path-rps" | "segment-serve" | "segment-serve-range" | "miss-storm" | "origin-flap";
+    targetRps?: number;
+    concurrency?: number;
+  };
+  metrics?: Record<string, { value: number; unit: string; label?: string }>;
 }
 
 export interface Statistics {

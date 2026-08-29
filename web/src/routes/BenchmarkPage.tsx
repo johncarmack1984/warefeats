@@ -30,7 +30,7 @@ export function BenchmarkPage() {
   }
 
   const tests = benchmarkTests(benchmark);
-  const ruleColumns = benchmark.ruleMap.length ? Object.keys(benchmark.ruleMap[0]!).filter((key) => key !== "intent") : [];
+  const ruleColumns = benchmark.ruleMap?.length ? Object.keys(benchmark.ruleMap[0]!).filter((key) => key !== "intent") : [];
   const candidateName = (id: string): string => benchmark.candidates.find((candidate) => candidate.id === id)?.name ?? id;
 
   return (
@@ -86,7 +86,7 @@ export function BenchmarkPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {benchmark.ruleMap.map((rule) => (
+                  {benchmark.ruleMap?.map((rule) => (
                     <tr key={rule.intent}>
                       <th scope="row">{rule.intent}</th>
                       {ruleColumns.map((column) => <td key={column}><code>{rule[column]}</code></td>)}
