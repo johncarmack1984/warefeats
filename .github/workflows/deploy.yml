@@ -70,7 +70,7 @@ jobs:
           SITE_BUCKET: ${{ steps.stack.outputs.bucket }}
         run: |
           aws s3 sync web/dist "s3://${SITE_BUCKET}" --delete --cache-control "public,max-age=3600"
-          aws s3 cp web/dist/index.html "s3://${SITE_BUCKET}/index.html" --cache-control "no-cache,no-store,must-revalidate" --content-type "text/html"
+          aws s3 sync web/dist "s3://${SITE_BUCKET}" --exclude "*" --include "*.html" --cache-control "no-cache,no-store,must-revalidate" --content-type "text/html"
           aws s3 sync web/dist/data "s3://${SITE_BUCKET}/data" --cache-control "public,max-age=300" --content-type "application/json"
 
       - name: Publish through CloudFront

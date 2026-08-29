@@ -43,4 +43,12 @@ test("keeps the origin private and serves it through CloudFront", () => {
   });
 
   template.resourceCountIs("AWS::Route53::RecordSet", 5);
+  template.resourceCountIs("AWS::CloudFront::Function", 1);
+  template.hasResourceProperties("AWS::CloudFront::Distribution", {
+    DistributionConfig: Match.objectLike({
+      DefaultCacheBehavior: Match.objectLike({
+        FunctionAssociations: [Match.objectLike({ EventType: "viewer-request" })],
+      }),
+    }),
+  });
 });

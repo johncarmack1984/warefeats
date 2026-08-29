@@ -1,43 +1,60 @@
-import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react";
-import { BenchmarkFeature } from "./components/BenchmarkFeature";
-import { Hero } from "./components/Hero";
-import { Methodology } from "./components/Methodology";
-import { Queue } from "./components/Queue";
+import { useEffect } from "react";
+import { Route, Routes, useLocation } from "react-router";
+import { useCatalog } from "./catalog-context";
+import { SiteFooter } from "./components/SiteFooter";
 import { SiteHeader } from "./components/SiteHeader";
-import { BenchmarkSkeleton, EmptyState, ErrorState } from "./components/States";
-import { useCatalog } from "./hooks/useCatalog";
+import { routeMeta } from "./head";
+import { About } from "./routes/About";
+import { BenchmarkPage } from "./routes/BenchmarkPage";
+import { Home } from "./routes/Home";
+import { Methodology } from "./routes/Methodology";
+import { NotFound } from "./routes/NotFound";
+
+function useDocumentMeta(): void {
+  const location = useLocation();
+  const { state } = useCatalog();
+
+  useEffect(() => {
+    const meta = routeMeta(location.pathname, state.status === "ready" ? state.catalog : undefined);
+    document.title = meta.title;
+    const set = (selector: string, value: string) => document.querySelector(selector)?.setAttribute("content", value);
+    set('meta[name="description"]', meta.description);
+    set('meta[property="og:title"]', meta.title);
+    set('meta[property="og:description"]', meta.description);
+    // Keep the origin the server put on the image tag (the dev server points it at itself).
+    const served = document.querySelector('meta[property="og:image"]')?.getAttribute("content");
+    const origin = served && /^https?:\/\//.test(served) ? new URL(served).origin : "https://warefeats.com";
+    const image = meta.image.replace("https://warefeats.com", origin);
+    set('meta[property="og:image"]', image);
+    set('meta[name="twitter:image"]', image);
+    set('meta[property="og:url"]', `https://warefeats.com${meta.path}`);
+    document.querySelector('link[rel="canonical"]')?.setAttribute("href", `https://warefeats.com${meta.path}`);
+  }, [location.pathname, state]);
+
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, location.hash]);
+}
 
 export default function App() {
-  const { state, reload } = useCatalog();
-  const featured = state.status === "ready" ? state.catalog.benchmarks[0] : undefined;
+  useDocumentMeta();
 
   return (
-    <div id="top">
+    <>
+      <a className="skip-link" href="#main">Skip to content</a>
       <SiteHeader />
-      <main>
-        <Hero featured={featured} />
-        {state.status === "loading" ? <BenchmarkSkeleton /> : null}
-        {state.status === "error" ? <ErrorState message={state.message} onRetry={reload} /> : null}
-        {state.status === "ready" && !featured ? <EmptyState /> : null}
-        {state.status === "ready" && featured ? (
-          <>
-            <BenchmarkFeature benchmark={featured} />
-            <Methodology benchmark={featured} />
-            <Queue items={state.catalog.queue} />
-          </>
-        ) : null}
+      <main id="main" className="page">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/benchmarks/:slug" element={<BenchmarkPage />} />
+          <Route path="/methodology" element={<Methodology />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </main>
-      <footer className="site-footer">
-        <div>
-          <span className="wordmark footer-wordmark"><span className="wordmark-mark" aria-hidden="true">wf</span><span>warefeats</span></span>
-          <p>Benchmarks for technology decisions. Raw runs included.</p>
-        </div>
-        <a href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">
-          <GithubLogo aria-hidden="true" />
-          Source and runner
-          <ArrowUpRight aria-hidden="true" />
-        </a>
-      </footer>
-    </div>
+      <SiteFooter />
+    </>
   );
 }

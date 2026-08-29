@@ -1,12 +1,13 @@
 import { ArrowClockwise, WarningCircle } from "@phosphor-icons/react";
+import { Link } from "react-router";
 
-export function BenchmarkSkeleton() {
+export function CatalogSkeleton() {
   return (
-    <section className="state-panel skeleton-panel" aria-label="Loading benchmark" aria-busy="true">
-      <div className="skeleton skeleton-short" />
+    <section className="state-panel skeleton-panel" aria-label="Loading benchmarks" aria-busy="true">
       <div className="skeleton skeleton-title" />
       <div className="skeleton skeleton-line" />
-      <div className="skeleton skeleton-chart" />
+      <div className="skeleton skeleton-line" />
+      <div className="skeleton skeleton-line" />
     </section>
   );
 }
@@ -19,12 +20,12 @@ interface ErrorStateProps {
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <section className="state-panel" role="alert">
-      <WarningCircle size={28} aria-hidden="true" />
-      <h2>The results did not load.</h2>
+      <WarningCircle size={24} aria-hidden="true" />
+      <h1>The catalog did not load.</h1>
       <p>{message}</p>
-      <button className="button button-primary" type="button" onClick={onRetry}>
-        Try again
+      <button className="button" type="button" onClick={onRetry}>
         <ArrowClockwise aria-hidden="true" />
+        Try again
       </button>
     </section>
   );
@@ -33,9 +34,9 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
 export function EmptyState() {
   return (
     <section className="state-panel">
-      <h2>No published runs yet.</h2>
-      <p>The catalog is valid, but it has no benchmark entries.</p>
-      <a className="button button-primary" href="#queue">View the queue</a>
+      <h1>No published runs yet.</h1>
+      <p>The catalog is valid but has no benchmark entries. The queue below lists what is planned.</p>
+      <Link className="button" to="/#queue">View the queue</Link>
     </section>
   );
 }

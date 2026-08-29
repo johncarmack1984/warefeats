@@ -3,18 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f2f0ea" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#161817" media="(prefers-color-scheme: dark)" />
-    <meta name="description" content="Independent, reproducible shootouts for developer tools and architecture choices." />
-    <meta property="og:title" content="warefeats | Benchmarks for technology decisions" />
-    <meta property="og:description" content="Independent, reproducible shootouts for developer tools and architecture choices." />
-    <meta property="og:url" content="https://warefeats.com" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://warefeats.com/images/lab-bench.webp" />
-    <title>warefeats | Benchmarks for technology decisions</title>
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <script src="/theme.js"></script>
+    <!--app-head-->
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      THESIS: a benchmark page reads like the report hyperfine prints: summary line, per-tool blocks, every sample. It refuses the devtools landing page (hero number in a card, bar chart, glow).
+      OWN-WORLD: barefeats.com's three colors, white paper, black ink, #cc0000 red (dark theme is the literal inversion: black paper, white ink; red lifts to #ff4d4d for contrast); Martian Mono for everything measured, Red Hat Text for everything said; hairline rules; red marks the fastest tool, dates, and links.
+      STORY: an engineer lands on a result, reads the ratio and its sigma, checks the rig, doubts it, opens the samples, copies the report, leaves in under a minute.
+      FIRST VIEWPORT: title, deck, byline; then the products compared; then Test 1, the box plot in its chart box, with Summary (the ratio at display scale) and the two report blocks beneath it. Home is the running log.
+      FORM: Benchmark Report Output, candidate 1 of 7, seed 03e98dbc.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+    -->
+    <div id="root" data-path=""><!--app-html--></div>
+    <!--app-data-->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

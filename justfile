@@ -33,7 +33,7 @@ upload:
     set -euo pipefail
     BUCKET=$(jq -r '.WarefeatsStack.SiteBucketName' infra-outputs.json)
     aws s3 sync web/dist "s3://$BUCKET" --delete --cache-control "public,max-age=3600"
-    aws s3 cp web/dist/index.html "s3://$BUCKET/index.html" --cache-control "no-cache,no-store,must-revalidate" --content-type "text/html"
+    aws s3 sync web/dist "s3://$BUCKET" --exclude "*" --include "*.html" --cache-control "no-cache,no-store,must-revalidate" --content-type "text/html"
     aws s3 sync web/dist/data "s3://$BUCKET/data" --cache-control "public,max-age=300" --content-type "application/json"
 
 invalidate:
