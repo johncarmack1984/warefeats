@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist/server && bun scripts/prerender.ts && bun scripts/og.ts",
+    "sync": "bun scripts/sync.ts",
+    "build": "tsc -b && vite build && bun scripts/assemble.ts && vite build --ssr src/entry-server.tsx --outDir dist/server && bun scripts/prerender.ts && bun scripts/og.ts",
     "preview": "vite preview",
     "check": "tsc -b --pretty false",
     "test": "bun test"
