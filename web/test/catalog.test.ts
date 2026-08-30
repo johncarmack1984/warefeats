@@ -263,27 +263,6 @@ describe("catalog validation", () => {
         ],
         runs: [
           {
-            id: "laptop",
-            label: "Laptop",
-            environment: { machine: "MacBook Pro", chip: "Apple M2 Max", cores: "12", memory: "96 GB", os: "macOS", arch: "arm64", runtime: "Docker" },
-            protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
-            publishedAt: "2026-08-30",
-            sections: [
-              {
-                id: "s1",
-                title: "Section 1",
-                deck: "First section",
-                unit: "ms",
-                lowerIsBetter: true,
-                verdict: { winnerId: "a", headline: "A wins", summary: "A faster" },
-                candidates: [
-                  { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
-                  { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
-                ],
-              },
-            ],
-          },
-          {
             id: "cloud",
             label: "Cloud (c7g.xlarge)",
             environment: { machine: "EC2 c7g.xlarge", chip: "Graviton3", cores: "4 vCPU", memory: "8 GB", os: "Amazon Linux 2023", arch: "arm64", runtime: "Docker" },
@@ -294,9 +273,9 @@ describe("catalog validation", () => {
         limitations: ["Test only"],
       }],
     });
-    expect(catalog.benchmarks[0]!.runs!.length).toBe(2);
-    expect(catalog.benchmarks[0]!.runs![0]!.id).toBe("laptop");
-    expect(catalog.benchmarks[0]!.runs![1]!.label).toBe("Cloud (c7g.xlarge)");
+    expect(catalog.benchmarks[0]!.runs!.length).toBe(1);
+    expect(catalog.benchmarks[0]!.runs![0]!.id).toBe("cloud");
+    expect(catalog.benchmarks[0]!.runs![0]!.label).toBe("Cloud (c7g.xlarge)");
   });
 
   test("accepts benchmarks without runs (backwards compatible)", () => {

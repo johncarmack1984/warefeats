@@ -11,15 +11,17 @@ import { REPO_URL } from "../components/SiteHeader";
 import { BoxPlot } from "../components/BoxPlot";
 import { CatalogSkeleton, ErrorState } from "../components/States";
 import { benchmarkTests, formatDate } from "../metrics";
-import type { Benchmark, BenchmarkRun } from "../types";
+import type { Benchmark } from "../types";
 import { NotFound } from "./NotFound";
 
-function EnvironmentToggle({ runs, selected, onSelect }: { runs: BenchmarkRun[]; selected: string; onSelect: (id: string) => void }) {
+const BASE_RUN_ID = "__base";
+
+function EnvironmentToggle({ options, selected, onSelect }: { options: { id: string; label: string }[]; selected: string; onSelect: (id: string) => void }) {
   return (
-    <div className="env-toggle" role="radiogroup" aria-label="Test environment">
-      {runs.map((run) => (
-        <button key={run.id} role="radio" aria-checked={run.id === selected} className={`env-toggle-btn${run.id === selected ? " active" : ""}`} onClick={() => onSelect(run.id)}>
-          {run.label}
+    <div className="env-toggle" aria-label="Test environment">
+      {options.map((option) => (
+        <button key={option.id} aria-pressed={option.id === selected} className={`env-toggle-btn${option.id === selected ? " active" : ""}`} onClick={() => onSelect(option.id)}>
+          {option.label}
         </button>
       ))}
     </div>
@@ -27,13 +29,16 @@ function EnvironmentToggle({ runs, selected, onSelect }: { runs: BenchmarkRun[];
 }
 
 function useActiveRun(benchmark: Benchmark) {
-  const hasMultipleRuns = benchmark.runs && benchmark.runs.length > 1;
-  const [selectedId, setSelectedId] = useState(benchmark.runs?.[0]?.id ?? "");
-  const activeRun = hasMultipleRuns ? benchmark.runs!.find((r) => r.id === selectedId) : undefined;
+  const runs = benchmark.runs ?? [];
+  const hasRuns = runs.length > 0;
+  const [selectedId, setSelectedId] = useState(BASE_RUN_ID);
+  const activeRun = selectedId !== BASE_RUN_ID ? runs.find((r) => r.id === selectedId) : undefined;
+  const toggleOptions = hasRuns ? [{ id: BASE_RUN_ID, label: benchmark.environment.machine }, ...runs] : [];
   return {
-    hasMultipleRuns: !!hasMultipleRuns,
+    hasRuns,
     selectedId,
     setSelectedId,
+    toggleOptions,
     environment: activeRun?.environment ?? benchmark.environment,
     protocol: activeRun?.protocol ?? benchmark.protocol,
     sections: activeRun?.sections ?? benchmark.sections,
@@ -41,24 +46,7 @@ function useActiveRun(benchmark: Benchmark) {
   };
 }
 
-export function BenchmarkPage() {
-  const { slug } = useParams();
-  const { state, reload } = useCatalog();
-
-  if (state.status === "loading") {
-    return <CatalogSkeleton />;
-  }
-
-  if (state.status === "error") {
-    return <ErrorState message={state.message} onRetry={reload} />;
-  }
-
-  const benchmark = state.catalog.benchmarks.find((entry) => entry.slug === slug);
-
-  if (!benchmark) {
-    return <NotFound />;
-  }
-
+function BenchmarkContent({ benchmark }: { benchmark: Benchmark }) {
   const run = useActiveRun(benchmark);
 
   if ((run.sections ?? benchmark.sections)?.length) {
@@ -72,7 +60,7 @@ export function BenchmarkPage() {
           <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {run.environment.machine}, {run.environment.chip}</p>
         </header>
 
-        {run.hasMultipleRuns && <EnvironmentToggle runs={benchmark.runs!} selected={run.selectedId} onSelect={run.setSelectedId} />}
+        {run.hasRuns && <EnvironmentToggle options={run.toggleOptions} selected={run.selectedId} onSelect={run.setSelectedId} />}
 
         {displaySections.map((section) => {
           const sectionTests = section.tests ?? [];
@@ -92,7 +80,7 @@ export function BenchmarkPage() {
           );
         })}
 
-        <Conditions benchmark={benchmark} />
+        <Conditions benchmark={{ ...benchmark, environment: run.environment, protocol: run.protocol }} />
 
         <section className="learned" aria-labelledby="learned-title">
           <h2 id="learned-title">What did we learn?</h2>
@@ -191,4 +179,25 @@ export function BenchmarkPage() {
       </section>
     </article>
   );
+}
+
+export function BenchmarkPage() {
+  const { slug } = useParams();
+  const { state, reload } = useCatalog();
+
+  if (state.status === "loading") {
+    return <CatalogSkeleton />;
+  }
+
+  if (state.status === "error") {
+    return <ErrorState message={state.message} onRetry={reload} />;
+  }
+
+  const benchmark = state.catalog.benchmarks.find((entry) => entry.slug === slug);
+
+  if (!benchmark) {
+    return <NotFound />;
+  }
+
+  return <BenchmarkContent benchmark={benchmark} />;
 }
