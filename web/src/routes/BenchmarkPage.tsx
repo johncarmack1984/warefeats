@@ -29,8 +29,52 @@ export function BenchmarkPage() {
     return <NotFound />;
   }
 
+  if (benchmark.sections?.length) {
+    return (
+      <article className="benchmark">
+        <header className="benchmark-head">
+          <p className="crumbs"><Link to="/">Benchmarks</Link> <span aria-hidden="true">/</span> {benchmark.category}</p>
+          <h1>{benchmark.title}</h1>
+          <p className="deck">{benchmark.deck}</p>
+          <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {benchmark.environment.machine}, {benchmark.environment.chip}</p>
+        </header>
+
+        {benchmark.sections.map((section) => {
+          const sectionTests = section.tests ?? [];
+          return (
+            <section className="benchmark-section" key={section.id} aria-labelledby={`section-${section.id}`}>
+              <h2 id={`section-${section.id}`}>{section.title}</h2>
+              <p className="deck">{section.deck}</p>
+              {sectionTests.length ? (
+                <div className="test-grid">
+                  {sectionTests.map((test, index) => (
+                    <BarChart benchmark={{ ...benchmark, candidates: section.candidates }} test={test} index={index} key={test.id} />
+                  ))}
+                </div>
+              ) : null}
+              <p className="section-verdict">{section.verdict.headline}</p>
+            </section>
+          );
+        })}
+
+        <Conditions benchmark={benchmark} />
+
+        <section className="learned" aria-labelledby="learned-title">
+          <h2 id="learned-title">What did we learn?</h2>
+          <p className="learned-lead">{benchmark.verdict.headline}. {benchmark.verdict.summary}</p>
+          <h3>What this does not prove</h3>
+          <ul>
+            {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+          </ul>
+          <p className="limits-foot">Rerun it yourself: the runner and configuration are in the <a href="https://github.com/johncarmack1984/warefeats/tree/main/services/proxy-bench" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+          {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
+        </section>
+      </article>
+    );
+  }
+
   const tests = benchmarkTests(benchmark);
-  const ruleColumns = benchmark.ruleMap.length ? Object.keys(benchmark.ruleMap[0]!).filter((key) => key !== "intent") : [];
+  const ruleColumns = benchmark.ruleMap?.length ? Object.keys(benchmark.ruleMap[0]!).filter((key) => key !== "intent") : [];
   const candidateName = (id: string): string => benchmark.candidates.find((candidate) => candidate.id === id)?.name ?? id;
 
   return (
@@ -86,7 +130,7 @@ export function BenchmarkPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {benchmark.ruleMap.map((rule) => (
+                  {benchmark.ruleMap?.map((rule) => (
                     <tr key={rule.intent}>
                       <th scope="row">{rule.intent}</th>
                       {ruleColumns.map((column) => <td key={column}><code>{rule[column]}</code></td>)}
@@ -108,6 +152,7 @@ export function BenchmarkPage() {
           {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
         </ul>
         <p className="limits-foot">Rerun it yourself: the runner and this corpus definition are in the <a href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+        {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
       </section>
     </article>
   );

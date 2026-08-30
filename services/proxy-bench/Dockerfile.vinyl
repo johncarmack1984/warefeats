@@ -1,0 +1,35 @@
+FROM debian:trixie-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    automake autoconf autotools-dev libtool pkg-config make gcc g++ \
+    libpcre2-dev libedit-dev libjemalloc-dev libunwind-dev \
+    python3-docutils python3-sphinx \
+    git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY . /src
+WORKDIR /src
+
+RUN test -f autogen.sh
+RUN sed -i 's/include lib bin vmod etc doc man contrib/include lib bin/' Makefile.am
+RUN ./autogen.sh
+RUN ./configure --with-persistent-storage --prefix=/usr/local
+RUN make -j$(nproc)
+RUN make install DESTDIR=/install
+
+FROM debian:trixie-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpcre2-8-0 libpcre2-dev libedit2 libjemalloc2 libunwind8 libncursesw6 curl adduser gcc libc6-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && adduser --system --no-create-home --group varnish \
+    && mkdir -p /var/lib/varnish/varnishd /etc/varnish \
+    && chown -R varnish:varnish /var/lib/varnish
+
+COPY --from=builder /install/usr/local/ /usr/local/
+RUN ldconfig
+
+WORKDIR /etc/varnish
+EXPOSE 80
+ENTRYPOINT ["vinyld", "-F"]
+CMD ["-a", "http=:80,HTTP", "-f", "/etc/varnish/default.vcl", "-s", "malloc,256m"]

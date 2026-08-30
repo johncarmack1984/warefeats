@@ -49,7 +49,7 @@ export function BarChart({ benchmark, test, index }: BarChartProps) {
                 key={result.candidateId}
               >
                 <span className="bar-label">
-                  {candidate?.logo ? <img src={candidate.logo} alt="" width="24" height="24" /> : null}
+                  {candidate?.logo ? <img src={candidate.logo} alt="" height="24" /> : null}
                   <span>{name(result.candidateId)}</span>
                 </span>
                 <span className="bar-track">

@@ -28,6 +28,13 @@
         "eslint": "9.34.0",
       },
     },
+    "services/proxy-bench": {
+      "name": "@warefeats/proxy-bench",
+      "devDependencies": {
+        "@types/bun": "1.2.21",
+        "typescript": "5.9.2",
+      },
+    },
     "web": {
       "name": "@warefeats/web",
       "version": "0.1.0",
@@ -315,6 +322,8 @@
     "@warefeats/benchmark-runner": ["@warefeats/benchmark-runner@workspace:services/benchmark-runner"],
 
     "@warefeats/infra": ["@warefeats/infra@workspace:infra"],
+
+    "@warefeats/proxy-bench": ["@warefeats/proxy-bench@workspace:services/proxy-bench"],
 
     "@warefeats/web": ["@warefeats/web@workspace:web"],
 

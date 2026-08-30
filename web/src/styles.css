@@ -1175,8 +1175,10 @@ th.num {
 
 .product-logo {
   grid-row: 1 / 3;
-  width: 3.5rem;
+  width: auto;
+  max-width: 9rem;
   height: 3.5rem;
+  object-fit: contain;
 }
 
 .product-logo-blank {
@@ -1319,8 +1321,10 @@ th.num {
 
 .bar-label img {
   flex: none;
-  width: 1.5rem;
+  width: auto;
+  max-width: 5rem;
   height: 1.5rem;
+  object-fit: contain;
 }
 
 .bar-track {
@@ -1631,5 +1635,24 @@ th.num {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Product logos are third-party marks shown unmodified; on a dark ground they sit on a light plate. */
+:root[data-theme="dark"] .bar-label img,
+:root[data-theme="dark"] .product-logo {
+  background: #fff;
+  border-radius: 4px;
+  padding: 2px 4px;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .bar-label img,
+  :root:not([data-theme="light"]) .product-logo {
+    background: #fff;
+    border-radius: 4px;
+    padding: 2px 4px;
+    box-sizing: border-box;
   }
 }
