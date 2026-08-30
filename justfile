@@ -99,3 +99,7 @@ proxy-bench-cloud-results:
     set -euo pipefail
     BUCKET=$(aws cloudformation describe-stacks --stack-name WarefeatsStack --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
     aws s3 ls "s3://$BUCKET/bench-runs/" --recursive | tail -20
+
+# tear the (opt-in) cloud rig back down; the site stack is untouched
+proxy-bench-destroy:
+    cd infra && bunx cdk destroy WarefeatsProxyBench --force
