@@ -17,7 +17,7 @@ services:
   engine:
     build:
       context: /Users/johncarmack/coding/varnish/vinyl-cache
-      dockerfile: /Users/johncarmack/coding/johncarmack1984/warefeats/services/proxy-bench/Dockerfile.vinyl
+      dockerfile: /Users/johncarmack/coding/warefeats/warefeats.com/services/proxy-bench/Dockerfile.vinyl
     command:
       - "-a"
       - "http=:80,HTTP"
