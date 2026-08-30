@@ -2,7 +2,7 @@ import { GithubLogo } from "@phosphor-icons/react";
 import { NavLink } from "react-router";
 import { ThemeToggle } from "./ThemeToggle";
 
-export const REPO_URL = "https://github.com/johncarmack1984/warefeats";
+export const REPO_URL = "https://github.com/warefeats/warefeats.com";
 
 export function SiteHeader() {
   return (

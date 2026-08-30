@@ -33,7 +33,7 @@ export function About() {
       <p>Product logos appear unmodified to identify the products under test and imply no endorsement. Varnish is a registered trademark of Varnish Software AB. NGINX is a trademark of F5, Inc. The Vinyl Cache logo is CC BY 4.0 <a href="https://rhubarbe.design" target="_blank" rel="noreferrer">Rhubarbe.design</a>. ESLint and Biome logos belong to their respective projects.</p>
 
       <h2>Corrections</h2>
-      <p>Think a result is wrong? Open an issue in the <a href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">repository</a> with your rig and your samples. Corrections go up as new runs. The original stays, with a note.</p>
+      <p>Think a result is wrong? Open an issue in the <a href="https://github.com/warefeats/warefeats.com" target="_blank" rel="noreferrer">repository</a> with your rig and your samples. Corrections go up as new runs. The original stays, with a note.</p>
 
       <p className="prose-foot"><Link to="/methodology">How each run is done</Link></p>
     </article>

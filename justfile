@@ -16,12 +16,6 @@ build:
 dev:
     bun run --cwd web dev
 
-benchmark:
-    bun run benchmark:lint
-
-benchmark-smoke:
-    bun run benchmark:smoke
-
 proxy-bench:
     bun run benchmark:proxy
 
@@ -68,15 +62,18 @@ cleanup-failed:
 setup-oidc:
     #!/usr/bin/env bash
     set -euo pipefail
+    : "${GITHUB_ORG_ID:?set GITHUB_ORG_ID to the numeric id from: gh api orgs/warefeats -q .id}"
     aws cloudformation deploy \
         --template-file infra/github-oidc-role.yml \
         --stack-name warefeats-github-oidc \
         --capabilities CAPABILITY_NAMED_IAM \
         --parameter-overrides \
-            ExistingOidcProviderArn=arn:aws:iam::735853783919:oidc-provider/token.actions.githubusercontent.com
+            ExistingOidcProviderArn=arn:aws:iam::735853783919:oidc-provider/token.actions.githubusercontent.com \
+            GitHubOrgId=$GITHUB_ORG_ID \
+            GitHubRepositoryId=1346850977
     ROLE_ARN=$(aws cloudformation describe-stacks \
         --stack-name warefeats-github-oidc \
         --query "Stacks[0].Outputs[?OutputKey=='RoleArn'].OutputValue" \
         --output text)
-    gh secret set AWS_DEPLOY_ROLE_ARN --body "$ROLE_ARN" --repo johncarmack1984/warefeats
+    gh secret set AWS_DEPLOY_ROLE_ARN --body "$ROLE_ARN" --repo warefeats/warefeats.com
     echo "OIDC role: $ROLE_ARN"
