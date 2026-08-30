@@ -27,7 +27,7 @@ export function Methodology() {
       <p>Each page ends with what the run does not prove. Lint throughput says nothing about rule coverage, editor integration, or migration cost, and the page says so.</p>
 
       <h2>Reproduce it</h2>
-      <p>The runner for every published benchmark is in the <a href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">warefeats repository</a>, next to the catalog this site renders. Run it on your machine. If your numbers disagree with mine, open an issue with your rig and your samples.</p>
+      <p>Every published benchmark links its runner, and all of them live under the <a href="https://github.com/warefeats" target="_blank" rel="noreferrer">warefeats organization</a> alongside the site that renders this catalog. Run it on your machine. If your numbers disagree with mine, open an issue with your rig and your samples.</p>
 
       <p className="prose-foot"><Link to="/">Back to the benchmarks</Link></p>
     </article>

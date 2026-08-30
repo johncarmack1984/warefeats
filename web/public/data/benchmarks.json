@@ -139,7 +139,8 @@
         "This isolates lint throughput. It does not score rule coverage, editor integrations, migration cost, or ecosystem compatibility.",
         "The paired rules express the same intent, but their implementations and exact diagnostics are not identical.",
         "The corpus is ESLint's own JavaScript source and may not represent a typical application repository."
-      ]
+      ],
+      "runnerUrl": "https://github.com/warefeats/js-linter-tools"
     },
     {
       "id": "proxy-hls-2026-08",
@@ -2152,7 +2153,8 @@
         "Purge/ban stampede is out of scope this pass (queued).",
         "Client, terminator, engine, and origin share one host's CPU/network stack — results reflect relative efficiency under shared contention, not isolated network performance.",
         "Traffic is synthetic HLS-shaped load, not a captured production trace."
-      ]
+      ],
+      "runnerUrl": "https://github.com/warefeats/warefeats.com/tree/main/services/proxy-bench"
     }
   ],
   "queue": [

@@ -51,6 +51,7 @@ export interface Benchmark {
   limitations: string[];
   /** Logo and trademark notices for the products under test, shown under the limitations. */
   trademarks?: string[];
+  runnerUrl?: string;
 }
 
 export interface BenchmarkSection {

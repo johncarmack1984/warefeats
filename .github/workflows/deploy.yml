@@ -40,9 +40,6 @@ jobs:
       - name: Test
         run: bun run test
 
-      - name: Smoke-test benchmark runner
-        run: bun run benchmark:smoke -- --output=/tmp/warefeats-smoke.json
-
       - name: Build web application
         run: bun run build
 

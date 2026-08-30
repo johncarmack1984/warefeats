@@ -4,10 +4,17 @@ Description: GitHub OIDC deploy role for warefeats
 Parameters:
   GitHubOrg:
     Type: String
-    Default: johncarmack1984
+    Default: warefeats
   GitHubRepository:
     Type: String
-    Default: warefeats
+    Default: warefeats.com
+  GitHubOrgId:
+    Type: String
+    Description: Numeric org/user ID (gh api orgs/warefeats -q .id). Required for immutable ID-form subject claims.
+  GitHubRepositoryId:
+    Type: String
+    Default: "1346850977"
+    Description: Numeric repository ID. Survives transfers; only the owner ID changes.
   ExistingOidcProviderArn:
     Type: String
     Default: ""
@@ -50,8 +57,8 @@ Resources:
                 token.actions.githubusercontent.com:sub:
                   - !Sub repo:${GitHubOrg}/${GitHubRepository}:ref:refs/heads/main
                   - !Sub repo:${GitHubOrg}/${GitHubRepository}:environment:production
-                  - "repo:johncarmack1984@20649979/warefeats@1346850977:ref:refs/heads/main"
-                  - "repo:johncarmack1984@20649979/warefeats@1346850977:environment:production"
+                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepository}@${GitHubRepositoryId}:ref:refs/heads/main
+                  - !Sub repo:${GitHubOrg}@${GitHubOrgId}/${GitHubRepository}@${GitHubRepositoryId}:environment:production
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/PowerUserAccess
 

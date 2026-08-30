@@ -5,7 +5,7 @@ warefeats is a benchmark comparison publication for developer tools and architec
 ## Workspace
 
 - `web/` contains the React and Vite publication UI plus the versioned benchmark catalog. Routes are `/` (index of every benchmark by category plus the queue), `/benchmarks/<slug>/`, `/methodology/`, and `/about/`; `bun run build` prerenders each route to static HTML with its own metadata, and a new catalog entry becomes a page with no new page code.
-- `services/benchmark-runner/` contains the reproducible local ESLint versus Biome runner.
+- `services/proxy-bench/` contains the reproducible HTTP caching proxy benchmark runner (Docker Compose workloads).
 - `infra/` contains the AWS CDK stack for private S3 and CloudFront hosting.
 - `.github/workflows/deploy.yml` verifies and deploys every push to `main`.
 
@@ -13,8 +13,12 @@ warefeats is a benchmark comparison publication for developer tools and architec
 
 Run `bun install`, then `bun run --cwd web dev` for the site (`bun run --cwd web preview` serves the prerendered `web/dist`). Run `bun run check`, `bun run test`, and `bun run build` before pushing.
 
-Run `bun run benchmark:lint` for the full 3-warmup, 20-pass benchmark. Use `bun run benchmark:smoke -- --output=/tmp/warefeats-smoke.json` for a short runner check.
-
 ## Deployment
 
 The production workflow expects the `AWS_DEPLOY_ROLE_ARN` repository secret and optionally the `AWS_REGION` repository variable. Follow [infra/README.md](infra/README.md) once per AWS account, then every push to `main` deploys the CDK stack, syncs `web/dist`, and invalidates CloudFront.
+
+## Related repositories
+
+Benchmarks live in their own repos under the [warefeats](https://github.com/warefeats) org; this repo is the publication site only.
+
+- [warefeats/js-linter-tools](https://github.com/warefeats/js-linter-tools) — the ESLint vs Biome reproducible runner.
