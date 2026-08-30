@@ -2154,7 +2154,7 @@
         "Client, terminator, engine, and origin share one host's CPU/network stack — results reflect relative efficiency under shared contention, not isolated network performance.",
         "Traffic is synthetic HLS-shaped load, not a captured production trace."
       ],
-      "runnerUrl": "https://github.com/warefeats/warefeats.com/tree/main/services/proxy-bench"
+      "runnerUrl": "https://github.com/warefeats/http-caching-proxies"
     }
   ],
   "queue": [

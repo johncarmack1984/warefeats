@@ -4,15 +4,12 @@
   "packageManager": "bun@1.4.0",
   "workspaces": [
     "web",
-    "services/*",
     "infra"
   ],
   "scripts": {
     "build": "bun run --cwd web build",
-    "check": "bun run --cwd web check && bun run --cwd services/proxy-bench check && bun run --cwd infra check",
-    "test": "bun run --cwd web test && bun run --cwd services/proxy-bench test && bun run --cwd infra test",
-    "benchmark:proxy": "bun run --cwd services/proxy-bench bench",
-    "benchmark:proxy-smoke": "bun run --cwd services/proxy-bench smoke",
+    "check": "bun run --cwd web check && bun run --cwd infra check",
+    "test": "bun run --cwd web test && bun run --cwd infra test",
     "infra:synth": "bun run --cwd infra synth",
     "infra:deploy": "bun run --cwd infra deploy"
   },

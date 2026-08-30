@@ -16,21 +16,6 @@ build:
 dev:
     bun run --cwd web dev
 
-proxy-bench:
-    bun run benchmark:proxy
-
-proxy-bench-smoke:
-    bun run benchmark:proxy-smoke
-
-proxy-bench-clean:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    cd services/proxy-bench/compose
-    for f in docker-compose.*.yml; do
-        p=$(basename "$f" .yml | sed 's/docker-compose\./bench-/')
-        docker compose -f "$f" -p "$p" down -v --remove-orphans 2>/dev/null || true
-    done
-
 synth:
     bun run infra:synth
 
