@@ -5,8 +5,13 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import type { Construct } from "constructs";
 
+export interface WarefeatsProxyBenchStackProps extends StackProps {
+  /** The site bucket from WarefeatsStack; results land under bench-runs/. */
+  siteBucket: s3.IBucket;
+}
+
 export class WarefeatsProxyBenchStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: WarefeatsProxyBenchStackProps) {
     super(scope, id, {
       ...props,
       description: "Ephemeral EC2 benchmark rig for proxy-bench (opt-in, workflow_dispatch only)",
@@ -18,7 +23,8 @@ export class WarefeatsProxyBenchStack extends Stack {
       description: "ARM64 AMI resolved from SSM at deploy time",
     });
 
-    const siteBucketName = Fn.importValue("Warefeats-SiteBucketName");
+    const bucket = props.siteBucket;
+    const siteBucketName = bucket.bucketName;
 
     // Default VPC — zero cost, already exists in every account, public IPs for SSM.
     // CfnSecurityGroup without VpcId defaults to the account's default VPC.
@@ -44,7 +50,6 @@ export class WarefeatsProxyBenchStack extends Stack {
       ],
     });
 
-    const bucket = s3.Bucket.fromBucketName(this, "SiteBucket", siteBucketName);
     bucket.grantPut(role, "bench-runs/*");
 
     const instanceProfile = new iam.CfnInstanceProfile(this, "InstanceProfile", {

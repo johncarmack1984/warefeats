@@ -5,7 +5,7 @@ import { WarefeatsStack } from "../lib/warefeats-stack";
 
 const app = new App();
 
-new WarefeatsStack(app, "WarefeatsStack", {
+const site = new WarefeatsStack(app, "WarefeatsStack", {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? "us-east-1",
@@ -14,6 +14,7 @@ new WarefeatsStack(app, "WarefeatsStack", {
 });
 
 new WarefeatsProxyBenchStack(app, "WarefeatsProxyBench", {
+  siteBucket: site.siteBucket,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? "us-east-1",

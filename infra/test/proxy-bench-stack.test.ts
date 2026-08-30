@@ -1,11 +1,15 @@
 import { test } from "bun:test";
-import { App } from "aws-cdk-lib";
+import { App, Stack } from "aws-cdk-lib";
+import * as s3 from "aws-cdk-lib/aws-s3";
 import { Match, Template } from "aws-cdk-lib/assertions";
 import { WarefeatsProxyBenchStack } from "../lib/proxy-bench-stack";
 
 test("creates three launch templates, a placement group, and a security group", () => {
   const app = new App();
+  const site = new Stack(app, "TestSite", { env: { account: "123456789012", region: "us-east-1" } });
+  const siteBucket = new s3.Bucket(site, "SiteBucket");
   const stack = new WarefeatsProxyBenchStack(app, "TestBench", {
+    siteBucket,
     env: { account: "123456789012", region: "us-east-1" },
   });
   const template = Template.fromStack(stack);

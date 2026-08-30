@@ -11,6 +11,8 @@ import type { Construct } from "constructs";
 const DOMAIN = "warefeats.com";
 
 export class WarefeatsStack extends Stack {
+  /** The site bucket; other stacks in the app take it as a prop (CDK wires the cross-stack export). */
+  public readonly siteBucket: s3.Bucket;
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
@@ -38,6 +40,7 @@ export class WarefeatsStack extends Stack {
         },
       ],
     });
+    this.siteBucket = siteBucket;
 
     const responseHeadersPolicy = new cloudfront.ResponseHeadersPolicy(this, "ResponseHeaders", {
       responseHeadersPolicyName: "warefeats-security-headers",
@@ -134,7 +137,6 @@ export class WarefeatsStack extends Stack {
     new CfnOutput(this, "SiteBucketName", {
       value: siteBucket.bucketName,
       description: "S3 bucket receiving the built web files",
-      exportName: "Warefeats-SiteBucketName",
     });
 
     new CfnOutput(this, "DistributionId", {
