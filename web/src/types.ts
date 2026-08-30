@@ -49,6 +49,8 @@ export interface Benchmark {
   /** Titled sub-benchmarks, each with its own candidates and charts. When present, top-level candidates may be empty. */
   sections?: BenchmarkSection[];
   limitations: string[];
+  /** Logo and trademark notices for the products under test, shown under the limitations. */
+  trademarks?: string[];
 }
 
 export interface BenchmarkSection {
