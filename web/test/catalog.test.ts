@@ -229,6 +229,119 @@ describe("catalog validation", () => {
     expect(catalog.benchmarks[0]!.id).toBe("single-run");
   });
 
+  test("accepts benchmarks with optional runs for multiple environments", () => {
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-30T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "multi-env",
+        slug: "multi-env",
+        category: "Test",
+        title: "Multi-env test",
+        deck: "A benchmark with two environment runs",
+        publishedAt: "2026-08-30",
+        unit: "ms",
+        lowerIsBetter: true,
+        verdict: { winnerId: "a", headline: "A wins", summary: "A is faster" },
+        environment: { machine: "MacBook Pro", chip: "Apple M2 Max", cores: "12", memory: "96 GB", os: "macOS", arch: "arm64", runtime: "Bun" },
+        protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
+        candidates: [],
+        sections: [
+          {
+            id: "s1",
+            title: "Section 1",
+            deck: "First section",
+            unit: "ms",
+            lowerIsBetter: true,
+            verdict: { winnerId: "a", headline: "A wins", summary: "A faster" },
+            candidates: [
+              { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+              { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+            ],
+          },
+        ],
+        runs: [
+          {
+            id: "laptop",
+            label: "Laptop",
+            environment: { machine: "MacBook Pro", chip: "Apple M2 Max", cores: "12", memory: "96 GB", os: "macOS", arch: "arm64", runtime: "Docker" },
+            protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
+            publishedAt: "2026-08-30",
+            sections: [
+              {
+                id: "s1",
+                title: "Section 1",
+                deck: "First section",
+                unit: "ms",
+                lowerIsBetter: true,
+                verdict: { winnerId: "a", headline: "A wins", summary: "A faster" },
+                candidates: [
+                  { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+                  { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+                ],
+              },
+            ],
+          },
+          {
+            id: "cloud",
+            label: "Cloud (c7g.xlarge)",
+            environment: { machine: "EC2 c7g.xlarge", chip: "Graviton3", cores: "4 vCPU", memory: "8 GB", os: "Amazon Linux 2023", arch: "arm64", runtime: "Docker" },
+            protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
+            publishedAt: "2026-08-30",
+          },
+        ],
+        limitations: ["Test only"],
+      }],
+    });
+    expect(catalog.benchmarks[0]!.runs!.length).toBe(2);
+    expect(catalog.benchmarks[0]!.runs![0]!.id).toBe("laptop");
+    expect(catalog.benchmarks[0]!.runs![1]!.label).toBe("Cloud (c7g.xlarge)");
+  });
+
+  test("accepts benchmarks without runs (backwards compatible)", () => {
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-30T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "no-runs",
+        slug: "no-runs",
+        category: "Test",
+        title: "No runs",
+        deck: "Test",
+        publishedAt: "2026-08-30",
+        unit: "ms",
+        lowerIsBetter: true,
+        verdict: { winnerId: "a", headline: "A", summary: "A" },
+        environment: { machine: "T", chip: "T", cores: "1", memory: "1 GB", os: "T", arch: "arm64", runtime: "T" },
+        protocol: { warmups: 0, runs: 1, processModel: "single", cacheState: "cold", output: "TTFB" },
+        candidates: [
+          { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+          { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+        ],
+        limitations: [],
+      }],
+    });
+    expect(catalog.benchmarks[0]!.runs).toBeUndefined();
+  });
+
+  test("rejects a run entry with missing id or label", () => {
+    expect(() => parseCatalog({
+      schemaVersion: 1,
+      queue: [],
+      benchmarks: [{
+        id: "bad-run",
+        title: "Bad",
+        candidates: [
+          { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+          { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+        ],
+        runs: [{ id: "x" }],
+      }],
+    })).toThrow("invalid run entry");
+  });
+
   test("rejects sections with fewer than two candidates", () => {
     expect(() => parseCatalog({
       schemaVersion: 1,

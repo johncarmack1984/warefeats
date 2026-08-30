@@ -48,10 +48,22 @@ export interface Benchmark {
   tests?: BenchmarkTest[];
   /** Titled sub-benchmarks, each with its own candidates and charts. When present, top-level candidates may be empty. */
   sections?: BenchmarkSection[];
+  /** Alternate environment runs of the same benchmark. When present with length > 1, the page offers an environment toggle. */
+  runs?: BenchmarkRun[];
   limitations: string[];
   /** Logo and trademark notices for the products under test, shown under the limitations. */
   trademarks?: string[];
   runnerUrl?: string;
+}
+
+export interface BenchmarkRun {
+  id: string;
+  label: string;
+  environment: Benchmark["environment"];
+  protocol: Benchmark["protocol"];
+  publishedAt: string;
+  sections?: BenchmarkSection[];
+  candidates?: Candidate[];
 }
 
 export interface BenchmarkSection {
