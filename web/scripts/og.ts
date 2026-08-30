@@ -23,7 +23,7 @@ function toPng(svg: string): Buffer {
   return new Resvg(svg, { fitTo: { mode: "width", value: 1200 } }).render().asPng();
 }
 
-const catalog = parseCatalog(JSON.parse(await readFile(join(root, "public", "data", "benchmarks.json"), "utf8")));
+const catalog = parseCatalog(JSON.parse(await readFile(join(root, "dist", "data", "benchmarks.json"), "utf8")));
 await mkdir(out, { recursive: true });
 await writeFile(join(out, "site.png"), toPng(await siteCard(fonts)));
 

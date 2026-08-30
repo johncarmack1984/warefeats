@@ -1,11 +1,15 @@
 import { describe, expect, test } from "bun:test";
+import { assembleCatalog } from "../scripts/assemble";
+import { validateRef, validateRunPath } from "../scripts/sync";
 import { parseCatalog } from "../src/catalog";
 import { headTags, normalizePath, prerenderPaths, routeMeta } from "../src/head";
 import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, standardDeviation, summarize } from "../src/metrics";
+import type { BenchmarkCatalog } from "../src/types";
 
+let _catalog: BenchmarkCatalog | undefined;
 async function loadCatalog() {
-  const file = Bun.file(new URL("../public/data/benchmarks.json", import.meta.url));
-  return parseCatalog(await file.json());
+  if (!_catalog) _catalog = await assembleCatalog();
+  return _catalog;
 }
 
 describe("benchmark catalog", () => {
@@ -64,6 +68,43 @@ describe("benchmark catalog", () => {
     expect(ticks[0]).toBeGreaterThanOrEqual(71);
     expect(ticks[ticks.length - 1]).toBeLessThanOrEqual(110);
     expect(ticks.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("catalog assembly", () => {
+  test("assembles the full catalog from registry + cache", async () => {
+    const catalog = await assembleCatalog();
+
+    expect(catalog.schemaVersion).toBe(1);
+    expect(catalog.generatedAt).toBeTruthy();
+    expect(catalog.benchmarks).toHaveLength(2);
+    expect(catalog.queue.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("sets runnerUrl from the registry repo", async () => {
+    const catalog = await assembleCatalog();
+
+    expect(catalog.benchmarks[0]!.runnerUrl).toBe("https://github.com/warefeats/js-linter-tools");
+    expect(catalog.benchmarks[1]!.runnerUrl).toBe("https://github.com/warefeats/http-caching-proxies");
+  });
+
+  test("merges the primary run into the legacy shape", async () => {
+    const catalog = await assembleCatalog();
+    const lint = catalog.benchmarks[0]!;
+
+    expect(lint.id).toBe("lint-js-eslint-biome-2026-08");
+    expect(lint.environment.chip).toBe("Apple M2 Max");
+    expect(lint.protocol.runs).toBe(20);
+    expect(lint.candidates.length).toBe(2);
+  });
+
+  test("preserves sections on a sections-based benchmark", async () => {
+    const catalog = await assembleCatalog();
+    const proxy = catalog.benchmarks[1]!;
+
+    expect(proxy.sections).toBeDefined();
+    expect(proxy.sections!.length).toBe(4);
+    expect(proxy.candidates).toEqual([]);
   });
 });
 
@@ -381,6 +422,91 @@ describe("routes", () => {
 
     expect(meta.status).toBe(404);
     expect(headTags(meta)).toContain('name="robots" content="noindex"');
+  });
+});
+
+describe("sync validators", () => {
+  test("accepts a valid 40-char hex SHA", () => {
+    expect(() => validateRef("3de924adf5e656698963a4b797c7cfb044176a4b")).not.toThrow();
+  });
+
+  test("rejects a short ref", () => {
+    expect(() => validateRef("3de924a")).toThrow("Invalid ref");
+  });
+
+  test("rejects an uppercase ref", () => {
+    expect(() => validateRef("3DE924ADF5E656698963A4B797C7CFB044176A4B")).toThrow("Invalid ref");
+  });
+
+  test("rejects a ref with non-hex characters", () => {
+    expect(() => validateRef("zde924adf5e656698963a4b797c7cfb044176a4b")).toThrow("Invalid ref");
+  });
+
+  test("accepts a valid run path", () => {
+    expect(() => validateRunPath("runs/local-2026-08.json")).not.toThrow();
+  });
+
+  test("rejects a path-traversal run path", () => {
+    expect(() => validateRunPath("runs/../secrets.json")).toThrow("Invalid run path");
+  });
+
+  test("rejects a run path outside the runs directory", () => {
+    expect(() => validateRunPath("benchmark.json")).toThrow("Invalid run path");
+  });
+
+  test("rejects a run path with subdirectories", () => {
+    expect(() => validateRunPath("runs/sub/file.json")).toThrow("Invalid run path");
+  });
+});
+
+describe("sections-only run assembly", () => {
+  test("assembles a benchmark whose alternate run has sections but no candidates", () => {
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-30T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "sections-only-alt",
+        slug: "sections-only-alt",
+        category: "Test",
+        title: "Sections-only alternate",
+        deck: "Primary has candidates, alternate has sections only",
+        publishedAt: "2026-08-30",
+        unit: "ms",
+        lowerIsBetter: true,
+        verdict: { winnerId: "a", headline: "A wins", summary: "A is faster" },
+        environment: { machine: "T", chip: "T", cores: "1", memory: "1 GB", os: "T", arch: "arm64", runtime: "T" },
+        protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
+        candidates: [
+          { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+          { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+        ],
+        runs: [{
+          id: "cloud",
+          label: "Cloud",
+          environment: { machine: "EC2", chip: "Graviton3", cores: "4", memory: "8 GB", os: "AL2023", arch: "arm64", runtime: "Docker" },
+          protocol: { warmups: 3, runs: 10, processModel: "container", cacheState: "warm", output: "TTFB" },
+          publishedAt: "2026-08-30",
+          sections: [{
+            id: "s1",
+            title: "Section 1",
+            deck: "First section",
+            unit: "ms",
+            lowerIsBetter: true,
+            verdict: { winnerId: "a", headline: "A wins", summary: "A faster" },
+            candidates: [
+              { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+              { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+            ],
+          }],
+        }],
+        limitations: [],
+      }],
+    });
+
+    expect(catalog.benchmarks[0]!.runs).toHaveLength(1);
+    expect(catalog.benchmarks[0]!.runs![0]!.sections).toHaveLength(1);
+    expect(catalog.benchmarks[0]!.runs![0]!.candidates).toBeUndefined();
   });
 });
 

@@ -12,7 +12,7 @@ interface ServerEntry {
 const root = join(import.meta.dir, "..");
 const dist = join(root, "dist");
 const template = await readFile(join(dist, "index.html"), "utf8");
-const catalog = parseCatalog(JSON.parse(await readFile(join(root, "public", "data", "benchmarks.json"), "utf8")));
+const catalog = parseCatalog(JSON.parse(await readFile(join(dist, "data", "benchmarks.json"), "utf8")));
 const entry = (await import(pathToFileURL(join(dist, "server", "entry-server.js")).href)) as ServerEntry;
 
 const embedded = JSON.stringify(catalog).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");

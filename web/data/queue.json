@@ -1,0 +1,40 @@
+{
+  "queue": [
+    {
+      "category": "Caching proxies",
+      "title": "Varnish vs Vinyl vs NGINX (HLS delivery)",
+      "question": "TTFB, coalescing, grace, throughput across topologies",
+      "status": "Published"
+    },
+    {
+      "category": "Caches",
+      "title": "Redis vs Dragonfly vs KeyDB",
+      "question": "Throughput, tail latency, memory pressure",
+      "status": "Planned"
+    },
+    {
+      "category": "Bundlers",
+      "title": "Vite vs esbuild vs tsup",
+      "question": "Cold builds, rebuilds, output weight",
+      "status": "Planned"
+    },
+    {
+      "category": "Desktop",
+      "title": "Tauri vs Electron",
+      "question": "Startup, idle memory, artifact size",
+      "status": "Planned"
+    },
+    {
+      "category": "Web maps",
+      "title": "MapLibre vs Mapbox",
+      "question": "Frame time, memory, visual parity",
+      "status": "Planned"
+    },
+    {
+      "category": "Tile servers",
+      "title": "Martin vs BBOX",
+      "question": "Cold starts, throughput, operations",
+      "status": "Planned"
+    }
+  ]
+}
