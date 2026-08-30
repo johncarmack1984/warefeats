@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "benchmarks": [
+    {
+      "slug": "eslint-vs-biome-javascript-lint",
+      "repo": "warefeats/js-linter-tools",
+      "ref": "3de924adf5e656698963a4b797c7cfb044176a4b"
+    },
+    {
+      "slug": "http-caching-proxies-hls",
+      "repo": "warefeats/http-caching-proxies",
+      "ref": "d791eaed1b551fabf8c93a9630f65e88353a90c7"
+    }
+  ]
+}
