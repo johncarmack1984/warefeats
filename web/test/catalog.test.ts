@@ -77,7 +77,8 @@ describe("catalog assembly", () => {
 
     expect(catalog.schemaVersion).toBe(1);
     expect(catalog.generatedAt).toBeTruthy();
-    expect(catalog.benchmarks).toHaveLength(2);
+    const registry = JSON.parse(await Bun.file(new URL("../data/registry.json", import.meta.url).pathname).text()) as { benchmarks: unknown[] };
+    expect(catalog.benchmarks).toHaveLength(registry.benchmarks.length);
     expect(catalog.queue.length).toBeGreaterThanOrEqual(1);
   });
 
