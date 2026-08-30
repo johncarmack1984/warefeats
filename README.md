@@ -5,7 +5,6 @@ warefeats is a benchmark comparison publication for developer tools and architec
 ## Workspace
 
 - `web/` contains the React and Vite publication UI plus the versioned benchmark catalog. Routes are `/` (index of every benchmark by category plus the queue), `/benchmarks/<slug>/`, `/methodology/`, and `/about/`; `bun run build` prerenders each route to static HTML with its own metadata, and a new catalog entry becomes a page with no new page code.
-- `services/proxy-bench/` contains the reproducible HTTP caching proxy benchmark runner (Docker Compose workloads).
 - `infra/` contains the AWS CDK stack for private S3 and CloudFront hosting.
 - `.github/workflows/deploy.yml` verifies and deploys every push to `main`.
 
@@ -22,3 +21,6 @@ The production workflow expects the `AWS_DEPLOY_ROLE_ARN` repository secret and 
 Benchmarks live in their own repos under the [warefeats](https://github.com/warefeats) org; this repo is the publication site only.
 
 - [warefeats/js-linter-tools](https://github.com/warefeats/js-linter-tools) — the ESLint vs Biome reproducible runner.
+- [warefeats/http-caching-proxies](https://github.com/warefeats/http-caching-proxies) — the Varnish vs Vinyl vs NGINX HLS caching-proxy runner.
+
+Each runner repo publishes to this site by writing its catalog entry into `web/public/data/benchmarks.json`; see the runner repo's README for its import command.
