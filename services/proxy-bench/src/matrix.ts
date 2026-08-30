@@ -59,12 +59,34 @@ const W4_CONFIG: WorkloadConfig = {
   reps: 5,
 };
 
+const W3_SMOKE: WorkloadConfig = {
+  path: "/stream/segment-{REP}.ts",
+  rps: 0,
+  concurrency: 50,
+  duration: "0s",
+  warmupSeconds: 0,
+  measuredBuckets: 0,
+  reps: 3,
+};
+
+const W4_SMOKE: WorkloadConfig = {
+  path: "/stream/segment-0.ts",
+  rps: 100,
+  concurrency: 5,
+  duration: "5s",
+  warmupSeconds: 0,
+  measuredBuckets: 0,
+  reps: 2,
+};
+
+const smokeMode = process.argv.includes("--smoke");
+
 export function workloadConfig(w: Workload): WorkloadConfig {
   switch (w) {
     case "hit-path-rps": return W1_CONFIG;
     case "segment-serve": return W2_CONFIG;
-    case "miss-storm": return W3_CONFIG;
-    case "origin-flap": return W4_CONFIG;
+    case "miss-storm": return smokeMode ? W3_SMOKE : W3_CONFIG;
+    case "origin-flap": return smokeMode ? W4_SMOKE : W4_CONFIG;
   }
 }
 
@@ -101,7 +123,7 @@ export function buildMatrix(smoke = false): Session[] {
 
   if (smoke) {
     return sessions.filter(
-      (s) => s.topology === "plaintext" && s.workload === "hit-path-rps",
+      (s) => s.topology === "plaintext" && s.workload !== "segment-serve",
     );
   }
 
@@ -122,9 +144,15 @@ export function composeFiles(session: Session): string[] {
   return files;
 }
 
+const ENGINE_HOST = process.env.ENGINE_HOST ?? "localhost";
+const ENGINE_PORT = process.env.ENGINE_PORT;
+const ENGINE_TLS_PORT = process.env.ENGINE_TLS_PORT;
+
 export function targetUrl(session: Session, path: string): string {
   if (session.topology === "plaintext") {
-    return `http://localhost:6081${path}`;
+    const port = ENGINE_PORT ?? "6081";
+    return `http://${ENGINE_HOST}:${port}${path}`;
   }
-  return `https://localhost:6443${path}`;
+  const port = ENGINE_TLS_PORT ?? "6443";
+  return `https://${ENGINE_HOST}:${port}${path}`;
 }

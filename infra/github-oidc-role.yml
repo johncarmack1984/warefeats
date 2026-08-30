@@ -55,6 +55,87 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/PowerUserAccess
 
+  ProxyBenchPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: warefeats-proxy-bench
+      Description: >-
+        Minimum permissions for the proxy-bench cloud workflow.
+        Redundant while PowerUserAccess is attached; documents the
+        least-privilege set for when the role is narrowed.
+      Roles:
+        - !Ref GitHubDeployRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: LaunchTaggedInstances
+            Effect: Allow
+            Action:
+              - ec2:RunInstances
+            Resource:
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:instance/*"
+            Condition:
+              StringEquals:
+                "aws:RequestTag/Component": proxy-bench
+          - Sid: LaunchSupportResources
+            Effect: Allow
+            Action:
+              - ec2:RunInstances
+            Resource:
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:launch-template/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:security-group/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:subnet/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:volume/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:network-interface/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:placement-group/*"
+              - !Sub "arn:aws:ec2:*::image/*"
+          - Sid: TagOnCreate
+            Effect: Allow
+            Action:
+              - ec2:CreateTags
+            Resource:
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:instance/*"
+              - !Sub "arn:aws:ec2:*:${AWS::AccountId}:volume/*"
+            Condition:
+              StringEquals:
+                "ec2:CreateAction": RunInstances
+          - Sid: ManageTaggedInstances
+            Effect: Allow
+            Action:
+              - ec2:TerminateInstances
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "aws:ResourceTag/Component": proxy-bench
+          - Sid: DescribeCompute
+            Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeInstanceStatus
+              - ec2:DescribeInstanceTypeOfferings
+              - ec2:DescribeSubnets
+            Resource: "*"
+          - Sid: SSMOrchestration
+            Effect: Allow
+            Action:
+              - ssm:SendCommand
+              - ssm:GetCommandInvocation
+              - ssm:DescribeInstanceInformation
+            Resource: "*"
+          - Sid: UploadBenchResults
+            Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: "arn:aws:s3:::*/bench-runs/*"
+          - Sid: PassBenchInstanceRole
+            Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
+            Condition:
+              StringEquals:
+                "iam:PassedToService": ec2.amazonaws.com
+
 Outputs:
   RoleArn:
     Description: Store this value as the AWS_DEPLOY_ROLE_ARN GitHub Actions secret.

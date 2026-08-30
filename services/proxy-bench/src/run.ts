@@ -5,12 +5,18 @@ const smoke = process.argv.includes("--smoke");
 const resume = process.argv.includes("--resume");
 const engineFilter = process.argv.find((a) => a.startsWith("--engine="))?.split("=")[1];
 const workloadFilter = process.argv.find((a) => a.startsWith("--workload="))?.split("=")[1];
-const matrix = buildMatrix(smoke).filter((s) => (!engineFilter || s.engine === engineFilter) && (!workloadFilter || s.workload === workloadFilter));
+const topologyFilter = process.argv.find((a) => a.startsWith("--topology="))?.split("=")[1];
+const matrix = buildMatrix(smoke).filter((s) =>
+  (!engineFilter || s.engine === engineFilter) &&
+  (!workloadFilter || s.workload === workloadFilter) &&
+  (!topologyFilter || s.topology === topologyFilter),
+);
 
 console.log(`proxy-bench: ${matrix.length} sessions${smoke ? " (smoke)" : ""}${engineFilter ? ` (engine=${engineFilter})` : ""}${resume ? " (resume)" : ""}`);
 for (const s of matrix) console.log(`  ${s.label}`);
 
-const outputPath = new URL("../results.json", import.meta.url).pathname;
+const outputArg = process.argv.find((a) => a.startsWith("--output="))?.split("=")[1];
+const outputPath = outputArg ?? new URL("../results.json", import.meta.url).pathname;
 
 interface SerializedResult {
   label: string;

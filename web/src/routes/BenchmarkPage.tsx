@@ -1,4 +1,5 @@
 import { DownloadSimple } from "@phosphor-icons/react";
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { useCatalog } from "../catalog-context";
 import { BarChart } from "../components/BarChart";
@@ -9,7 +10,35 @@ import { ReportBlock } from "../components/ReportBlock";
 import { BoxPlot } from "../components/BoxPlot";
 import { CatalogSkeleton, ErrorState } from "../components/States";
 import { benchmarkTests, formatDate } from "../metrics";
+import type { Benchmark, BenchmarkRun } from "../types";
 import { NotFound } from "./NotFound";
+
+function EnvironmentToggle({ runs, selected, onSelect }: { runs: BenchmarkRun[]; selected: string; onSelect: (id: string) => void }) {
+  return (
+    <div className="env-toggle" role="radiogroup" aria-label="Test environment">
+      {runs.map((run) => (
+        <button key={run.id} role="radio" aria-checked={run.id === selected} className={`env-toggle-btn${run.id === selected ? " active" : ""}`} onClick={() => onSelect(run.id)}>
+          {run.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function useActiveRun(benchmark: Benchmark) {
+  const hasMultipleRuns = benchmark.runs && benchmark.runs.length > 1;
+  const [selectedId, setSelectedId] = useState(benchmark.runs?.[0]?.id ?? "");
+  const activeRun = hasMultipleRuns ? benchmark.runs!.find((r) => r.id === selectedId) : undefined;
+  return {
+    hasMultipleRuns: !!hasMultipleRuns,
+    selectedId,
+    setSelectedId,
+    environment: activeRun?.environment ?? benchmark.environment,
+    protocol: activeRun?.protocol ?? benchmark.protocol,
+    sections: activeRun?.sections ?? benchmark.sections,
+    candidates: activeRun?.candidates ?? benchmark.candidates,
+  };
+}
 
 export function BenchmarkPage() {
   const { slug } = useParams();
@@ -29,17 +58,22 @@ export function BenchmarkPage() {
     return <NotFound />;
   }
 
-  if (benchmark.sections?.length) {
+  const run = useActiveRun(benchmark);
+
+  if ((run.sections ?? benchmark.sections)?.length) {
+    const displaySections = run.sections ?? benchmark.sections ?? [];
     return (
       <article className="benchmark">
         <header className="benchmark-head">
           <p className="crumbs"><Link to="/">Benchmarks</Link> <span aria-hidden="true">/</span> {benchmark.category}</p>
           <h1>{benchmark.title}</h1>
           <p className="deck">{benchmark.deck}</p>
-          <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {benchmark.environment.machine}, {benchmark.environment.chip}</p>
+          <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {run.environment.machine}, {run.environment.chip}</p>
         </header>
 
-        {benchmark.sections.map((section) => {
+        {run.hasMultipleRuns && <EnvironmentToggle runs={benchmark.runs!} selected={run.selectedId} onSelect={run.setSelectedId} />}
+
+        {displaySections.map((section) => {
           const sectionTests = section.tests ?? [];
           return (
             <section className="benchmark-section" key={section.id} aria-labelledby={`section-${section.id}`}>

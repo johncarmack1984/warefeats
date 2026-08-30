@@ -40,6 +40,18 @@ export function projectName(session: Session): string {
 }
 
 export async function composeUp(session: Session): Promise<void> {
+  if (process.env.CLOUD_MODE === "1") {
+    console.log(`  cloud mode: skipping compose up for ${projectName(session)}`);
+    const url = targetUrl(session, "/stream/master.m3u8");
+    const insecure = session.topology !== "plaintext";
+    for (let i = 0; i < 60; i++) {
+      const check = Bun.spawnSync(["curl", "-sf", "-o", "/dev/null", ...(insecure ? ["-k"] : []), url]);
+      if (check.exitCode === 0) break;
+      await Bun.sleep(1000);
+    }
+    await Bun.sleep(1000);
+    return;
+  }
   const cmd = composeCmd(session, ["up", "-d", "--build", "--wait", "--wait-timeout", "120"]);
   console.log(`  compose up: ${projectName(session)}`);
   const result = Bun.spawnSync(cmd, { stderr: "inherit", timeout: 180_000 });
@@ -57,6 +69,10 @@ export async function composeUp(session: Session): Promise<void> {
 }
 
 export async function composeDown(session: Session): Promise<void> {
+  if (process.env.CLOUD_MODE === "1") {
+    console.log(`  cloud mode: skipping compose down for ${projectName(session)}`);
+    return;
+  }
   const cmd = composeCmd(session, ["down", "-v", "--remove-orphans"]);
   console.log(`  compose down: ${projectName(session)}`);
   Bun.spawnSync(cmd, { stderr: "inherit" });

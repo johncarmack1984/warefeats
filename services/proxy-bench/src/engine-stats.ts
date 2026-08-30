@@ -48,6 +48,9 @@ async function nginxHitMiss(containerName: string): Promise<{ hits: number; miss
 }
 
 export async function collectStats(engine: Engine, projectName: string): Promise<EngineStats> {
+  if (process.env.CLOUD_MODE === "1") {
+    return { rssMb: 0 };
+  }
   const containerName = `${projectName}-engine-1`;
   const rssMb = await dockerStats(containerName);
 

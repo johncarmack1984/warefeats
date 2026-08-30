@@ -1,0 +1,320 @@
+name: Proxy Bench (Cloud)
+
+on:
+  workflow_dispatch:
+    inputs:
+      engine_type:
+        description: "Engine instance type (default c7g.metal, fallback c7g.4xlarge if quota < 64 vCPU)"
+        default: c7g.metal
+        type: string
+      matrix:
+        description: "Benchmark matrix"
+        type: choice
+        options:
+          - smoke
+          - full
+        default: smoke
+      region:
+        description: "AWS region"
+        default: us-east-1
+        type: string
+
+concurrency:
+  group: proxy-bench-cloud
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ inputs.region }}
+
+jobs:
+  bench:
+    name: Run proxy-bench (${{ inputs.matrix }}, ${{ inputs.engine_type }})
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      run_id: ${{ steps.launch.outputs.run_id }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.region }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: proxy-bench-${{ github.run_id }}
+
+      - name: Read CDK stack outputs
+        id: infra
+        run: |
+          OUTPUTS=$(aws cloudformation describe-stacks \
+            --stack-name WarefeatsProxyBench \
+            --query "Stacks[0].Outputs" --output json)
+          for key in ClientLaunchTemplateId EngineLaunchTemplateId OriginLaunchTemplateId \
+                     PlacementGroupName SecurityGroupId SiteBucketNameOut; do
+            val=$(echo "$OUTPUTS" | jq -r ".[] | select(.OutputKey==\"$key\") | .OutputValue")
+            echo "${key}=${val}" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Find AZ with engine capacity
+        id: az
+        run: |
+          AZ=$(aws ec2 describe-instance-type-offerings \
+            --location-type availability-zone \
+            --filters "Name=instance-type,Values=${{ inputs.engine_type }}" \
+            --query "InstanceTypeOfferings[0].Location" --output text)
+          SUBNET=$(aws ec2 describe-subnets \
+            --filters "Name=availability-zone,Values=${AZ}" "Name=default-for-az,Values=true" \
+            --query "Subnets[0].SubnetId" --output text)
+          echo "az=${AZ}" >> "$GITHUB_OUTPUT"
+          echo "subnet=${SUBNET}" >> "$GITHUB_OUTPUT"
+
+      - name: Launch three instances
+        id: launch
+        run: |
+          RUN_ID="bench-$(date +%Y%m%d-%H%M%S)-${GITHUB_RUN_NUMBER}"
+          echo "run_id=${RUN_ID}" >> "$GITHUB_OUTPUT"
+
+          launch_instance() {
+            local ROLE=$1 LT=$2 TYPE=$3
+            aws ec2 run-instances \
+              --launch-template "LaunchTemplateId=${LT}" \
+              --instance-type "${TYPE}" \
+              --subnet-id "${{ steps.az.outputs.subnet }}" \
+              --placement "GroupName=${{ steps.infra.outputs.PlacementGroupName }}" \
+              --tag-specifications "ResourceType=instance,Tags=[
+                {Key=Name,Value=${RUN_ID}-${ROLE}},
+                {Key=Project,Value=warefeats},
+                {Key=Component,Value=proxy-bench},
+                {Key=BenchRole,Value=${ROLE}},
+                {Key=BenchRunId,Value=${RUN_ID}}]" \
+              --query 'Instances[0].InstanceId' --output text
+          }
+
+          ORIGIN_ID=$(launch_instance origin "${{ steps.infra.outputs.OriginLaunchTemplateId }}" c7g.xlarge)
+          ENGINE_ID=$(launch_instance engine "${{ steps.infra.outputs.EngineLaunchTemplateId }}" "${{ inputs.engine_type }}")
+          CLIENT_ID=$(launch_instance client "${{ steps.infra.outputs.ClientLaunchTemplateId }}" c7g.xlarge)
+
+          echo "origin_id=${ORIGIN_ID}" >> "$GITHUB_OUTPUT"
+          echo "engine_id=${ENGINE_ID}" >> "$GITHUB_OUTPUT"
+          echo "client_id=${CLIENT_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for instances running
+        run: |
+          aws ec2 wait instance-running --instance-ids \
+            ${{ steps.launch.outputs.origin_id }} \
+            ${{ steps.launch.outputs.engine_id }} \
+            ${{ steps.launch.outputs.client_id }}
+
+      - name: Get private IPs
+        id: ips
+        run: |
+          get_ip() {
+            aws ec2 describe-instances --instance-ids "$1" \
+              --query 'Reservations[0].Instances[0].PrivateIpAddress' --output text
+          }
+          echo "origin_ip=$(get_ip ${{ steps.launch.outputs.origin_id }})" >> "$GITHUB_OUTPUT"
+          echo "engine_ip=$(get_ip ${{ steps.launch.outputs.engine_id }})" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for SSM readiness
+        run: |
+          wait_ssm() {
+            local ID=$1
+            for i in $(seq 1 60); do
+              STATUS=$(aws ssm describe-instance-information \
+                --filters "Key=InstanceIds,Values=${ID}" \
+                --query "InstanceInformationList[0].PingStatus" --output text 2>/dev/null || echo "none")
+              if [ "$STATUS" = "Online" ]; then return 0; fi
+              sleep 10
+            done
+            echo "SSM timeout for ${ID}" >&2; return 1
+          }
+          wait_ssm ${{ steps.launch.outputs.origin_id }}
+          wait_ssm ${{ steps.launch.outputs.engine_id }}
+          wait_ssm ${{ steps.launch.outputs.client_id }}
+
+      - name: Collect instance metadata
+        id: meta
+        run: |
+          get_ami() {
+            aws ec2 describe-instances --instance-ids "$1" \
+              --query 'Reservations[0].Instances[0].ImageId' --output text
+          }
+          echo "ami=$(get_ami ${{ steps.launch.outputs.engine_id }})" >> "$GITHUB_OUTPUT"
+
+      - name: Start origin
+        run: |
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "${{ steps.launch.outputs.origin_id }}" \
+            --document-name AWS-RunShellScript \
+            --timeout-seconds 300 \
+            --parameters '{"commands":["cd /opt/warefeats/services/proxy-bench && docker build -t bench-origin origin/ && docker run -d --name bench-origin -p 3000:3000 bench-origin"]}' \
+            --query 'Command.CommandId' --output text)
+          aws ssm wait command-executed --command-id "$CMD_ID" \
+            --instance-id "${{ steps.launch.outputs.origin_id }}"
+
+      - name: Run benchmark matrix
+        env:
+          ENGINE_ID: ${{ steps.launch.outputs.engine_id }}
+          CLIENT_ID: ${{ steps.launch.outputs.client_id }}
+          ORIGIN_IP: ${{ steps.ips.outputs.origin_ip }}
+          ENGINE_IP: ${{ steps.ips.outputs.engine_ip }}
+          MATRIX: ${{ inputs.matrix }}
+          RUN_ID: ${{ steps.launch.outputs.run_id }}
+        run: |
+          ssm_run() {
+            local INSTANCE=$1; shift
+            local CMD_ID
+            CMD_ID=$(aws ssm send-command \
+              --instance-ids "$INSTANCE" \
+              --document-name AWS-RunShellScript \
+              --timeout-seconds 3600 \
+              --parameters "{\"commands\":[\"$*\"]}" \
+              --query 'Command.CommandId' --output text)
+            echo "  SSM command ${CMD_ID} on ${INSTANCE}"
+            for i in $(seq 1 360); do
+              STATUS=$(aws ssm get-command-invocation \
+                --command-id "$CMD_ID" --instance-id "$INSTANCE" \
+                --query 'Status' --output text 2>/dev/null || echo "Pending")
+              case "$STATUS" in
+                Success) return 0 ;;
+                Failed|TimedOut|Cancelled)
+                  aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$INSTANCE" \
+                    --query 'StandardErrorContent' --output text >&2
+                  return 1 ;;
+              esac
+              sleep 10
+            done
+            return 1
+          }
+
+          SMOKE_FLAG=""
+          if [ "$MATRIX" = "smoke" ]; then SMOKE_FLAG="--smoke"; fi
+
+          ENGINES=("varnish" "vinyl" "nginx")
+          TOPOS_PLAIN=("plaintext")
+          TOPOS_FULL=("plaintext" "tls-inprocess" "proxyv2-haproxy")
+
+          for engine in "${ENGINES[@]}"; do
+            if [ "$MATRIX" = "smoke" ]; then
+              TOPOS=("${TOPOS_PLAIN[@]}")
+            else
+              TOPOS=("${TOPOS_FULL[@]}")
+            fi
+
+            for topo in "${TOPOS[@]}"; do
+              if [ "$engine" = "vinyl" ] && [ "$topo" = "tls-inprocess" ]; then continue; fi
+
+              echo "=== ${engine}/${topo} ==="
+
+              # Build compose command for engine box
+              COMPOSE_FILES="-f compose/docker-compose.${engine}.yml -f compose/cloud-overlay.yml"
+              if [ "$topo" = "tls-inprocess" ]; then
+                COMPOSE_FILES="-f compose/docker-compose.${engine}.yml -f compose/topology-tls.${engine}.yml -f compose/cloud-overlay.yml"
+              elif [ "$topo" = "proxyv2-haproxy" ]; then
+                COMPOSE_FILES="-f compose/docker-compose.${engine}.yml -f compose/topology-proxyv2.yml -f compose/topology-proxyv2.${engine}.yml -f compose/cloud-overlay.yml"
+              fi
+
+              PROJECT="bench-${engine}-${topo}"
+              UP_SERVICES="engine"
+              if [ "$topo" = "proxyv2-haproxy" ]; then UP_SERVICES="engine haproxy"; fi
+
+              # Start engine on engine box
+              ssm_run "$ENGINE_ID" \
+                "cd /opt/warefeats/services/proxy-bench && ORIGIN_HOST=${ORIGIN_IP} docker compose --project-directory compose ${COMPOSE_FILES} -p ${PROJECT} up -d --no-deps --build --wait ${UP_SERVICES}"
+
+              # Run workloads on client box
+              ssm_run "$CLIENT_ID" \
+                "cd /opt/warefeats && ENGINE_HOST=${ENGINE_IP} ORIGIN_HOST=${ORIGIN_IP} ORIGIN_PORT=3000 CLOUD_MODE=1 bun run --cwd services/proxy-bench src/run.ts ${SMOKE_FLAG} --engine=${engine} --topology=${topo} --output=/tmp/results.json" || true
+
+              # Stop engine
+              ssm_run "$ENGINE_ID" \
+                "cd /opt/warefeats/services/proxy-bench && docker compose --project-directory compose ${COMPOSE_FILES} -p ${PROJECT} down -v --remove-orphans" || true
+            done
+          done
+
+      - name: Collect results
+        env:
+          CLIENT_ID: ${{ steps.launch.outputs.client_id }}
+          RUN_ID: ${{ steps.launch.outputs.run_id }}
+          BUCKET: ${{ steps.infra.outputs.SiteBucketNameOut }}
+          ENGINE_TYPE: ${{ inputs.engine_type }}
+          AMI: ${{ steps.meta.outputs.ami }}
+        run: |
+          # Copy results from client to S3
+          CMD_ID=$(aws ssm send-command \
+            --instance-ids "$CLIENT_ID" \
+            --document-name AWS-RunShellScript \
+            --timeout-seconds 120 \
+            --parameters "{\"commands\":[\"aws s3 cp /tmp/results.json s3://${BUCKET}/bench-runs/${RUN_ID}/results.json\"]}" \
+            --query 'Command.CommandId' --output text)
+          for i in $(seq 1 30); do
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD_ID" --instance-id "$CLIENT_ID" \
+              --query 'Status' --output text 2>/dev/null || echo "Pending")
+            if [ "$STATUS" = "Success" ] || [ "$STATUS" = "Failed" ]; then break; fi
+            sleep 5
+          done
+
+          # Upload metadata
+          cat > /tmp/metadata.json <<METAEOF
+          {
+            "runId": "${RUN_ID}",
+            "engineType": "${ENGINE_TYPE}",
+            "clientType": "c7g.xlarge",
+            "originType": "c7g.xlarge",
+            "ami": "${AMI}",
+            "region": "${AWS_REGION}",
+            "matrix": "${{ inputs.matrix }}",
+            "gitSha": "${GITHUB_SHA}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          METAEOF
+          aws s3 cp /tmp/metadata.json "s3://${BUCKET}/bench-runs/${RUN_ID}/metadata.json"
+
+      - name: Terminate instances
+        if: always()
+        run: |
+          INSTANCES=""
+          for id in "${{ steps.launch.outputs.origin_id }}" \
+                    "${{ steps.launch.outputs.engine_id }}" \
+                    "${{ steps.launch.outputs.client_id }}"; do
+            if [ -n "$id" ]; then INSTANCES="$INSTANCES $id"; fi
+          done
+          if [ -n "$INSTANCES" ]; then
+            aws ec2 terminate-instances --instance-ids $INSTANCES || true
+          fi
+
+  reaper:
+    name: Reap stale bench instances
+    runs-on: ubuntu-latest
+    if: always()
+    needs: bench
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.region }}
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: proxy-bench-reaper-${{ github.run_id }}
+
+      - name: Terminate instances older than 3 hours
+        run: |
+          THREE_HOURS_AGO=$(date -u -d '3 hours ago' +%Y-%m-%dT%H:%M:%S 2>/dev/null || date -u -v-3H +%Y-%m-%dT%H:%M:%S)
+          STALE=$(aws ec2 describe-instances \
+            --filters "Name=tag:Component,Values=proxy-bench" \
+                      "Name=instance-state-name,Values=running,pending" \
+            --query "Reservations[].Instances[?LaunchTime<='${THREE_HOURS_AGO}'].InstanceId" \
+            --output text)
+          if [ -n "$STALE" ] && [ "$STALE" != "None" ]; then
+            echo "Terminating stale instances: $STALE"
+            aws ec2 terminate-instances --instance-ids $STALE
+          else
+            echo "No stale instances found"
+          fi

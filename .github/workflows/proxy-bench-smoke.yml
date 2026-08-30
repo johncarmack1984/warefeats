@@ -1,0 +1,112 @@
+name: Proxy Bench Smoke
+
+on:
+  pull_request:
+    paths:
+      - "services/proxy-bench/**"
+      - ".github/workflows/proxy-bench-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test (compose, arm64)
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+
+      - name: Install oha
+        run: |
+          curl -fsSL https://github.com/hatoo/oha/releases/download/v1.16.0/oha-linux-aarch64 \
+            -o /usr/local/bin/oha
+          chmod +x /usr/local/bin/oha
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run smoke matrix
+        working-directory: services/proxy-bench
+        run: bun run src/run.ts --smoke --output=/tmp/smoke-results.json
+
+      - name: Assert invariants
+        run: |
+          set -euo pipefail
+          RESULTS=/tmp/smoke-results.json
+
+          RESULT_COUNT=$(jq '.resultCount' "$RESULTS")
+          FAILURE_COUNT=$(jq '.failureCount' "$RESULTS")
+          echo "Results: ${RESULT_COUNT}, Failures: ${FAILURE_COUNT}"
+
+          if [ "$FAILURE_COUNT" -ne 0 ]; then
+            echo "FAIL: ${FAILURE_COUNT} failures"
+            jq '.failures' "$RESULTS"
+            exit 1
+          fi
+
+          # All cells completed (3 engines × 3 workloads = 9 smoke cells)
+          if [ "$RESULT_COUNT" -lt 9 ]; then
+            echo "FAIL: expected >= 9 results, got ${RESULT_COUNT}"
+            exit 1
+          fi
+
+          # Error rate = 0 for all W1 (hit-path-rps) cells
+          W1_ERRORS=$(jq '[.results[] | select(.workload == "hit-path-rps") | .errorRate] | map(select(. > 0)) | length' "$RESULTS")
+          if [ "$W1_ERRORS" -ne 0 ]; then
+            echo "FAIL: W1 error rate > 0 in ${W1_ERRORS} cells"
+            exit 1
+          fi
+
+          # Coalescing: 1 origin request per burst for all engines (W3 miss-storm)
+          for engine in varnish vinyl nginx; do
+            AVG_ORIGIN=$(jq -r ".results[] | select(.engine == \"${engine}\" and .workload == \"miss-storm\") | .metrics.avg_origin_requests.value" "$RESULTS")
+            if [ -z "$AVG_ORIGIN" ] || [ "$AVG_ORIGIN" = "null" ]; then
+              echo "FAIL: no miss-storm result for ${engine}"
+              exit 1
+            fi
+            if [ "$(echo "$AVG_ORIGIN > 1.1" | bc -l)" -eq 1 ]; then
+              echo "FAIL: ${engine} coalescing broken, avg origin requests = ${AVG_ORIGIN}"
+              exit 1
+            fi
+            echo "OK: ${engine} coalescing = ${AVG_ORIGIN} origin reqs/burst"
+          done
+
+          # Grace: 100% hit ratio during origin flap (W4)
+          for engine in varnish vinyl nginx; do
+            GRACE=$(jq -r ".results[] | select(.engine == \"${engine}\" and .workload == \"origin-flap\") | .metrics.grace_ratio.value" "$RESULTS")
+            if [ -z "$GRACE" ] || [ "$GRACE" = "null" ]; then
+              echo "FAIL: no origin-flap result for ${engine}"
+              exit 1
+            fi
+            if [ "$(echo "$GRACE < 100" | bc -l)" -eq 1 ]; then
+              echo "FAIL: ${engine} grace ratio = ${GRACE}%"
+              exit 1
+            fi
+            echo "OK: ${engine} grace ratio = ${GRACE}%"
+          done
+
+          # Vinyl hit counter > 0
+          VINYL_HITS=$(jq -r '.results[] | select(.engine == "vinyl" and .workload == "hit-path-rps") | .engineStats.cacheHits // 0' "$RESULTS")
+          if [ "$VINYL_HITS" -eq 0 ]; then
+            echo "FAIL: vinyl cache hits = 0 (vinylstat may be broken)"
+            exit 1
+          fi
+          echo "OK: vinyl cache hits = ${VINYL_HITS}"
+
+          echo "All invariants passed"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: /tmp/smoke-results.json
+          retention-days: 30

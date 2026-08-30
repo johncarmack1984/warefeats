@@ -1,0 +1,46 @@
+name: Build Vinyl image
+
+on:
+  workflow_dispatch:
+    inputs:
+      vinyl_ref:
+        description: "vinyl-cache commit or branch to build"
+        required: true
+        default: main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build and push to GHCR
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Check out warefeats (for Dockerfile.vinyl)
+        uses: actions/checkout@v4
+
+      - name: Check out vinyl-cache source
+        uses: actions/checkout@v4
+        with:
+          repository: johncarmack1984/vinyl-cache
+          ref: ${{ inputs.vinyl_ref }}
+          path: vinyl-src
+          token: ${{ secrets.VINYL_CHECKOUT_TOKEN || github.token }}
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: vinyl-src
+          file: services/proxy-bench/Dockerfile.vinyl
+          push: true
+          tags: |
+            ghcr.io/johncarmack1984/vinyl-cache:${{ inputs.vinyl_ref }}
+            ghcr.io/johncarmack1984/vinyl-cache:latest

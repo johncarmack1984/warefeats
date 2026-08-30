@@ -1,0 +1,9 @@
+services:
+  engine:
+    extra_hosts:
+      - "origin:${ORIGIN_HOST}"
+    deploy:
+      resources:
+        limits:
+          cpus: ""
+          memory: ""

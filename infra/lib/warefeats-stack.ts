@@ -134,6 +134,7 @@ export class WarefeatsStack extends Stack {
     new CfnOutput(this, "SiteBucketName", {
       value: siteBucket.bucketName,
       description: "S3 bucket receiving the built web files",
+      exportName: "Warefeats-SiteBucketName",
     });
 
     new CfnOutput(this, "DistributionId", {
