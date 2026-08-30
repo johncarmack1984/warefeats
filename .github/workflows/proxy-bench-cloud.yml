@@ -34,7 +34,7 @@ jobs:
   bench:
     name: Run proxy-bench (${{ inputs.matrix }}, ${{ inputs.engine_type }})
     runs-on: ubuntu-latest
-    environment: production
+    environment: proxy-bench
     outputs:
       run_id: ${{ steps.launch.outputs.run_id }}
     steps:
@@ -291,6 +291,7 @@ jobs:
   reaper:
     name: Reap stale bench instances
     runs-on: ubuntu-latest
+    environment: proxy-bench
     if: always()
     needs: bench
     permissions:
