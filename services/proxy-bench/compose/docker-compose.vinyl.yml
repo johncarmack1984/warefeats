@@ -16,8 +16,10 @@ services:
 
   engine:
     build:
-      context: /Users/johncarmack/coding/varnish/vinyl-cache
-      dockerfile: /Users/johncarmack/coding/warefeats/warefeats.com/services/proxy-bench/Dockerfile.vinyl
+      context: ..
+      dockerfile: Dockerfile.vinyl
+      additional_contexts:
+        vinyl: "${VINYL_CACHE_DIR:?set VINYL_CACHE_DIR to a Vinyl Cache source checkout}"
     command:
       - "-a"
       - "http=:80,HTTP"

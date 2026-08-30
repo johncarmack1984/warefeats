@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . /src
+# The Vinyl Cache source tree is passed in as the `vinyl` build context (see compose/docker-compose.vinyl.yml).
+COPY --from=vinyl . /src
 WORKDIR /src
 
 RUN test -f autogen.sh

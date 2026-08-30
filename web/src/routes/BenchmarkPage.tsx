@@ -6,6 +6,7 @@ import { Conditions } from "../components/Conditions";
 import { Products } from "../components/Products";
 import { CopyReport } from "../components/CopyReport";
 import { ReportBlock } from "../components/ReportBlock";
+import { REPO_URL } from "../components/SiteHeader";
 import { BoxPlot } from "../components/BoxPlot";
 import { CatalogSkeleton, ErrorState } from "../components/States";
 import { benchmarkTests, formatDate } from "../metrics";
@@ -66,7 +67,7 @@ export function BenchmarkPage() {
           <ul>
             {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
           </ul>
-          <p className="limits-foot">Rerun it yourself: the runner and configuration are in the <a href="https://github.com/warefeats/warefeats.com/tree/main/services/proxy-bench" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+          <p className="limits-foot">Rerun it yourself: the runner and configuration are in the <a href={benchmark.runnerUrl ?? REPO_URL} target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
           {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
         </section>
       </article>
@@ -151,7 +152,7 @@ export function BenchmarkPage() {
         <ul>
           {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
         </ul>
-        <p className="limits-foot">Rerun it yourself: the runner and this corpus definition are in the <a href="https://github.com/warefeats/warefeats.com" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+        <p className="limits-foot">Rerun it yourself: the runner and this corpus definition are in the <a href={benchmark.runnerUrl ?? REPO_URL} target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
         {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
       </section>
     </article>

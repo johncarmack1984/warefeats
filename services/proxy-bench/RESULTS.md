@@ -18,6 +18,7 @@ MacBook Pro, Apple M2 Max, 12 CPU cores, 96 GB, macOS 26.0 (arm64). Docker via O
 
 ```sh
 # Per-engine batches (incremental saves, --resume skips completed cells)
+# The vinyl engine builds from source: point VINYL_CACHE_DIR at a Vinyl Cache checkout (the repo .env is loaded by just).
 bun run --cwd services/proxy-bench src/run.ts --engine=varnish
 bun run --cwd services/proxy-bench src/run.ts --engine=vinyl
 bun run --cwd services/proxy-bench src/run.ts --engine=nginx
