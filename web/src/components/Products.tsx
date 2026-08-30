@@ -14,7 +14,7 @@ export function Products({ benchmark }: ProductsProps) {
           const isWinner = candidate.id === benchmark.verdict.winnerId;
           return (
             <li className={isWinner ? "product is-fastest" : "product"} key={candidate.id}>
-              {candidate.logo ? <img className="product-logo" src={candidate.logo} alt="" width="56" height="56" /> : <span className="product-logo product-logo-blank" aria-hidden="true" />}
+              {candidate.logo ? <img className="product-logo" src={candidate.logo} alt="" height="56" /> : <span className="product-logo product-logo-blank" aria-hidden="true" />}
               <span className="product-name">
                 {candidate.homepage ? <a href={candidate.homepage} target="_blank" rel="noreferrer">{candidate.name}</a> : candidate.name}
               </span>

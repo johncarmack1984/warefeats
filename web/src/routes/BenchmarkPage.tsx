@@ -67,6 +67,7 @@ export function BenchmarkPage() {
             {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
           </ul>
           <p className="limits-foot">Rerun it yourself: the runner and configuration are in the <a href="https://github.com/johncarmack1984/warefeats/tree/main/services/proxy-bench" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+          {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
         </section>
       </article>
     );
@@ -151,6 +152,7 @@ export function BenchmarkPage() {
           {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
         </ul>
         <p className="limits-foot">Rerun it yourself: the runner and this corpus definition are in the <a href="https://github.com/johncarmack1984/warefeats" target="_blank" rel="noreferrer">repository</a>, and the <Link to="/methodology">methodology</Link> page covers what every run holds constant. Think a result is wrong? Open an issue with your rig and your samples.</p>
+        {benchmark.trademarks ? <p className="limits-foot">{benchmark.trademarks.join(" ")}</p> : null}
       </section>
     </article>
   );

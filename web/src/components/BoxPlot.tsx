@@ -81,7 +81,7 @@ export function BoxPlot({ benchmark, index }: BoxPlotProps) {
                 key={candidate.id}
               >
                 <span className="bar-label">
-                  {candidate.logo ? <img src={candidate.logo} alt="" width="24" height="24" /> : null}
+                  {candidate.logo ? <img src={candidate.logo} alt="" height="24" /> : null}
                   <span>{candidate.name}</span>
                 </span>
                 <div
