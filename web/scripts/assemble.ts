@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { parseCatalog } from "../src/catalog";
 import type { Benchmark, BenchmarkCatalog } from "../src/types";
 
+const SHA_PATTERN = /^[0-9a-f]{40}$/;
+
 interface RegistryEntry {
   slug: string;
   repo: string;
@@ -14,8 +16,8 @@ interface Registry {
   benchmarks: RegistryEntry[];
 }
 
-export async function assembleCatalog(): Promise<BenchmarkCatalog> {
-  const root = join(import.meta.dir, "..");
+export async function assembleCatalog(rootOverride?: string): Promise<BenchmarkCatalog> {
+  const root = rootOverride ?? join(import.meta.dir, "..");
 
   const registry: Registry = JSON.parse(await readFile(join(root, "data", "registry.json"), "utf8"));
   const { queue } = JSON.parse(await readFile(join(root, "data", "queue.json"), "utf8"));
@@ -30,10 +32,12 @@ export async function assembleCatalog(): Promise<BenchmarkCatalog> {
   const benchmarks: Benchmark[] = [];
 
   for (const entry of registry.benchmarks) {
+    if (!SHA_PATTERN.test(entry.ref)) throw new Error(`Invalid ref "${entry.ref}" in registry for ${entry.slug}`);
     const cached = manifest[entry.slug];
     if (!cached || cached.ref !== entry.ref) {
       throw new Error(`Cache for ${entry.slug} is stale (expected ${entry.ref.slice(0, 7)}, got ${cached?.ref.slice(0, 7) ?? "missing"}) — run bun run sync`);
     }
+    if (!SHA_PATTERN.test(cached.ref)) throw new Error(`Invalid ref "${cached.ref}" in manifest for ${entry.slug}`);
     benchmarks.push(JSON.parse(await readFile(join(root, "data", "cache", `${entry.slug}.json`), "utf8")));
   }
 

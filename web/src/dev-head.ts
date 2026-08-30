@@ -1,18 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Plugin } from "vite";
-import { parseCatalog } from "./catalog";
+import { assembleCatalog } from "../scripts/assemble";
 import { headTags, routeMeta } from "./head";
 import type { BenchmarkCatalog } from "./types";
 
-/**
- * Dev-server parity with the prerendered build: inject each route's head tags into the served
- * HTML and render Open Graph cards on request. Production output comes from scripts/prerender.ts
- * and scripts/og.ts; this plugin does nothing during `vite build`.
- */
 export function devHead(root: string): Plugin {
   async function catalog(): Promise<BenchmarkCatalog> {
-    return parseCatalog(JSON.parse(await readFile(join(root, "public", "data", "benchmarks.json"), "utf8")));
+    return assembleCatalog(root);
   }
 
   return {
@@ -22,12 +17,23 @@ export function devHead(root: string): Plugin {
       const path = (context.originalUrl ?? context.path).replace(/^https?:\/\/[^/]+/, "");
       const meta = routeMeta(path, await catalog());
       const host = context.server?.resolvedUrls?.local[0]?.replace(/\/$/, "") ?? "";
-      // Point image tags at this server so link-preview tools can fetch the card before a deploy.
       const tags = host ? headTags(meta).replaceAll(`content="${meta.image}"`, `content="${meta.image.replace("https://warefeats.com", host)}"`) : headTags(meta);
       return html.replace("<!--app-head-->", tags);
     },
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {
+        if (request.url === "/data/benchmarks.json") {
+          try {
+            const data = await catalog();
+            const json = JSON.stringify(data, null, 2);
+            response.setHeader("Content-Type", "application/json");
+            response.end(json);
+          } catch (error) {
+            next(error);
+          }
+          return;
+        }
+
         const match = /^\/og\/([a-z0-9-]+)\.png$/i.exec(request.url ?? "");
         if (!match) {
           next();
