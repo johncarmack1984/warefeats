@@ -80,3 +80,22 @@ setup-oidc:
         --output text)
     gh secret set AWS_DEPLOY_ROLE_ARN --body "$ROLE_ARN" --repo johncarmack1984/warefeats
     echo "OIDC role: $ROLE_ARN"
+
+# cloud benchmark rig (infra/lib/proxy-bench-stack.ts + .github/workflows/proxy-bench-cloud.yml)
+proxy-bench-deploy:
+    bun run infra:deploy -- WarefeatsProxyBench --require-approval never
+
+proxy-bench-oidc: setup-oidc
+
+# dispatch the cloud run from the current branch; matrix=smoke|full, engine=c7g.metal|c7g.4xlarge
+proxy-bench-cloud matrix="smoke" engine="c7g.metal":
+    gh workflow run proxy-bench-cloud.yml --ref "$(git branch --show-current)" -f matrix={{matrix}} -f engine_type={{engine}} --repo johncarmack1984/warefeats
+
+proxy-bench-cloud-watch:
+    gh run watch --repo johncarmack1984/warefeats "$(gh run list --repo johncarmack1984/warefeats --workflow proxy-bench-cloud.yml --limit 1 --json databaseId -q '.[0].databaseId')" --exit-status
+
+proxy-bench-cloud-results:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    BUCKET=$(aws cloudformation describe-stacks --stack-name WarefeatsStack --query "Stacks[0].Outputs[?OutputKey=='SiteBucketName'].OutputValue" --output text)
+    aws s3 ls "s3://$BUCKET/bench-runs/" --recursive | tail -20
