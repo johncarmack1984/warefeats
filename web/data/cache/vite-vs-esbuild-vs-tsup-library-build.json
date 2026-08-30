@@ -1,0 +1,179 @@
+{
+  "id": "bundler-js-vite-esbuild-tsup-2026-08",
+  "slug": "vite-vs-esbuild-vs-tsup-library-build",
+  "category": "Bundlers",
+  "title": "Vite vs esbuild vs tsup",
+  "deck": "Cold production builds of a TypeScript library — ESM, minified, no declarations.",
+  "publishedAt": "2026-08-30",
+  "unit": "ms",
+  "lowerIsBetter": true,
+  "verdict": {
+    "winnerId": "esbuild",
+    "headline": "esbuild finished in 16 ms; Vite took 170 ms, tsup 204 ms",
+    "summary": "esbuild built zod in 15.9 ms at the median. Vite took 170.4 ms (10.7x slower); tsup took 203.6 ms (12.8x slower). esbuild and tsup produced byte-identical 426 KB bundles. Vite's output was 482 KB — the difference is almost entirely whitespace that Vite preserves in ES library builds for downstream tree-shaking."
+  },
+  "corpus": {
+    "name": "zod 4.5.4 library source",
+    "source": "github.com/colinhacks/zod@v4.5.4/src",
+    "files": 124,
+    "lines": 36620,
+    "bytes": 1298414
+  },
+  "environment": {
+    "machine": "MacBook Pro",
+    "chip": "Apple M2 Max",
+    "cores": "12 CPU cores",
+    "memory": "96 GB",
+    "os": "macOS 26.6.2",
+    "arch": "arm64",
+    "runtime": "Node 24.19.0 (Vite, tsup); esbuild native binary; Bun 1.4.0 harness",
+    "node": "24.19.0"
+  },
+  "protocol": {
+    "warmups": 3,
+    "runs": 20,
+    "processModel": "A new CLI process for every measured pass, output directory cleared between passes",
+    "cacheState": "Warm filesystem cache after 3 unmeasured passes per candidate",
+    "output": "Bundled output emitted to a dedicated directory per tool"
+  },
+  "candidates": [
+    {
+      "id": "esbuild",
+      "name": "esbuild",
+      "version": "0.28.2",
+      "statistics": {
+        "medianMs": 15.9,
+        "meanMs": 16,
+        "minMs": 14.7,
+        "maxMs": 17.3
+      },
+      "samplesMs": [
+        16.8,
+        15.9,
+        15.7,
+        15,
+        16.5,
+        15.6,
+        16.4,
+        17.3,
+        15.9,
+        16.7,
+        15.6,
+        16.2,
+        15.4,
+        17.1,
+        16.2,
+        16.5,
+        15.3,
+        15.5,
+        14.9,
+        14.7
+      ],
+      "logo": "/logos/esbuild.svg",
+      "homepage": "https://esbuild.github.io",
+      "color": "#FFCF00",
+      "metrics": {
+        "outputBytes": {
+          "value": 436156,
+          "unit": "bytes",
+          "label": "Output size"
+        }
+      }
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "version": "8.2.2",
+      "statistics": {
+        "medianMs": 170.4,
+        "meanMs": 170.8,
+        "minMs": 161.8,
+        "maxMs": 184.9
+      },
+      "samplesMs": [
+        163.6,
+        161.8,
+        169.1,
+        168.5,
+        171.9,
+        175.2,
+        170.7,
+        171.7,
+        170.8,
+        184.9,
+        175.8,
+        172.7,
+        171.8,
+        169.3,
+        173.6,
+        169.9,
+        167.9,
+        167.8,
+        169.7,
+        170.1
+      ],
+      "logo": "/logos/vite.svg",
+      "homepage": "https://vite.dev",
+      "color": "#646CFF",
+      "metrics": {
+        "outputBytes": {
+          "value": 493218,
+          "unit": "bytes",
+          "label": "Output size"
+        }
+      }
+    },
+    {
+      "id": "tsup",
+      "name": "tsup",
+      "version": "8.5.1",
+      "statistics": {
+        "medianMs": 203.6,
+        "meanMs": 203.8,
+        "minMs": 200.4,
+        "maxMs": 206.7
+      },
+      "samplesMs": [
+        203.4,
+        200.4,
+        203.8,
+        202.6,
+        203.2,
+        202.8,
+        203,
+        206.3,
+        205.3,
+        204.5,
+        204.2,
+        202.7,
+        203.8,
+        206.7,
+        203.4,
+        202.9,
+        202.9,
+        204.1,
+        205.3,
+        204.2
+      ],
+      "homepage": "https://tsup.egoist.dev",
+      "color": "#EE6A00",
+      "metrics": {
+        "outputBytes": {
+          "value": 436156,
+          "unit": "bytes",
+          "label": "Output size"
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Cold builds only — no incremental state, fresh CLI process per pass, warm filesystem cache. No watch mode or hot module replacement timing.",
+    "One corpus: a zero-dependency TypeScript library (zod 4.5.4, 124 files, ~36,600 lines). Application builds with many dependencies, code-splitting, or CSS processing may produce different rankings.",
+    "Build speed says nothing about dev-server experience, plugin ecosystems, or output correctness beyond \"it built.\"",
+    "All three tools use esbuild's minifier, but not identically. Vite delegates bundling to Rolldown (Rust), then runs esbuild for minification — but for ES-format library builds, Vite deliberately disables whitespace minification to preserve `/* @__PURE__ */` annotations for downstream tree-shaking. esbuild and tsup minify fully, including whitespace. Re-minifying Vite's output with `esbuild --minify-whitespace` alone brings it within 1.2% of esbuild's size.",
+    "Declaration file generation (.d.ts) is disabled for all candidates. tsup's `dts` option is off by default; enabling it invokes the TypeScript compiler and would add significant time.",
+    "Times are fresh-process wall clock, including runtime startup and CLI module loading. Measured floors on this rig: `node -e 0` ~24 ms, `vite --version` ~77 ms, `tsup --version` ~35 ms, `esbuild --version` ~6 ms (native binary). The tools' self-reported build timers exclude startup cost.",
+    "tsup is no longer actively maintained. Its README recommends tsdown as a successor. Results are included because tsup remains widely installed."
+  ],
+  "runnerUrl": "https://github.com/warefeats/js-bundlers"
+}

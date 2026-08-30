@@ -15,8 +15,8 @@
     {
       "category": "Bundlers",
       "title": "Vite vs esbuild vs tsup",
-      "question": "Cold builds, rebuilds, output weight",
-      "status": "Planned"
+      "question": "Cold builds, output weight",
+      "status": "Published"
     },
     {
       "category": "Desktop",
