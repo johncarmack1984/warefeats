@@ -40,60 +40,18 @@
         "output": "Diagnostics produced and redirected away from the terminal"
       },
       "ruleMap": [
-        {
-          "intent": "Unused variables",
-          "eslint": "no-unused-vars",
-          "biome": "correctness/noUnusedVariables"
-        },
-        {
-          "intent": "Strict equality",
-          "eslint": "eqeqeq",
-          "biome": "suspicious/noDoubleEquals"
-        },
-        {
-          "intent": "Debugger statements",
-          "eslint": "no-debugger",
-          "biome": "suspicious/noDebugger"
-        },
-        {
-          "intent": "Prefer const",
-          "eslint": "prefer-const",
-          "biome": "style/useConst"
-        }
+        { "intent": "Unused variables", "eslint": "no-unused-vars", "biome": "correctness/noUnusedVariables" },
+        { "intent": "Strict equality", "eslint": "eqeqeq", "biome": "suspicious/noDoubleEquals" },
+        { "intent": "Debugger statements", "eslint": "no-debugger", "biome": "suspicious/noDebugger" },
+        { "intent": "Prefer const", "eslint": "prefer-const", "biome": "style/useConst" }
       ],
       "candidates": [
         {
           "id": "eslint",
           "name": "ESLint",
           "version": "9.34.0",
-          "statistics": {
-            "medianMs": 105.6,
-            "meanMs": 106,
-            "minMs": 103.5,
-            "maxMs": 108.9
-          },
-          "samplesMs": [
-            108.8,
-            105.9,
-            107.2,
-            107.5,
-            105.2,
-            105.5,
-            105.2,
-            104.6,
-            104.2,
-            108.9,
-            108.7,
-            103.5,
-            104.9,
-            106.4,
-            106.9,
-            105.4,
-            105.9,
-            105.6,
-            105.6,
-            104.8
-          ],
+          "statistics": { "medianMs": 105.6, "meanMs": 106, "minMs": 103.5, "maxMs": 108.9 },
+          "samplesMs": [108.8, 105.9, 107.2, 107.5, 105.2, 105.5, 105.2, 104.6, 104.2, 108.9, 108.7, 103.5, 104.9, 106.4, 106.9, 105.4, 105.9, 105.6, 105.6, 104.8],
           "logo": "/logos/eslint.svg",
           "homepage": "https://eslint.org",
           "color": "#4B32C3"
@@ -102,34 +60,8 @@
           "id": "biome",
           "name": "Biome",
           "version": "2.2.2",
-          "statistics": {
-            "medianMs": 75.2,
-            "meanMs": 75.4,
-            "minMs": 71.5,
-            "maxMs": 79.6
-          },
-          "samplesMs": [
-            75.1,
-            74,
-            73.6,
-            72.1,
-            75.3,
-            78.7,
-            79.6,
-            78.5,
-            79.4,
-            76.3,
-            77.8,
-            76.2,
-            74.6,
-            75.4,
-            72.8,
-            75.6,
-            74.8,
-            72.5,
-            75.1,
-            71.5
-          ],
+          "statistics": { "medianMs": 75.2, "meanMs": 75.4, "minMs": 71.5, "maxMs": 79.6 },
+          "samplesMs": [75.1, 74, 73.6, 72.1, 75.3, 78.7, 79.6, 78.5, 79.4, 76.3, 77.8, 76.2, 74.6, 75.4, 72.8, 75.6, 74.8, 72.5, 75.1, 71.5],
           "logo": "/logos/biome.svg",
           "homepage": "https://biomejs.dev",
           "color": "#60A5FA"
@@ -142,18 +74,18 @@
       ]
     },
     {
-      "id": "proxy-hls-hit-path-rps-2026-08",
-      "slug": "hls-hit-path-rps",
+      "id": "proxy-hls-2026-08",
+      "slug": "http-caching-proxies-hls",
       "category": "Caching proxies",
-      "title": "HLS hit-path TTFB",
-      "deck": "p99 TTFB at 5000 rps on a 2 KB manifest across three caching proxies and three TLS topologies.",
+      "title": "HTTP caching proxies for HLS delivery",
+      "deck": "Varnish, Vinyl, and NGINX across four HLS workloads: hit-path TTFB, segment serve, miss-storm coalescing, and origin-flap grace.",
       "publishedAt": "2026-08-29",
       "unit": "ms",
       "lowerIsBetter": true,
       "verdict": {
-        "winnerId": "nginx-tls-inprocess",
-        "headline": "p99 TTFB ranged from 2.07 ms (NGINX stable (TLS)) to 3.30 ms (Varnish 9.0.3 (plaintext))",
-        "summary": "5000 rps sustained on a 2 KB manifest, warm cache, 20 measured passes per engine-topology pair."
+        "winnerId": "mixed",
+        "headline": "No single engine dominated all four workloads",
+        "summary": "NGINX had the lowest hit-path p99 TTFB, Varnish and Vinyl led on segment delivery, all three coalesced 200 concurrent requests to one origin fetch, and all three maintained 100% grace under origin failure."
       },
       "environment": {
         "machine": "MacBook Pro",
@@ -171,1972 +103,567 @@
         "cacheState": "Warm cache after three curl requests (W1/W2) or cold by construction (W3)",
         "output": "TTFB via oha 1.16.0 with --latency-correction"
       },
-      "candidates": [
+      "candidates": [],
+      "sections": [
         {
-          "id": "varnish-plaintext",
-          "name": "Varnish 9.0.3 (plaintext)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 25.862,
-            "meanMs": 25.862,
-            "minMs": 25.862,
-            "maxMs": 25.862
-          },
-          "samplesMs": [
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833,
-            25.861833
-          ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "plaintext",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.651,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 25.862,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.6,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 149.3,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "varnish-tls-inprocess",
-          "name": "Varnish 9.0.3 (TLS)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 3.193,
-            "meanMs": 3.193,
-            "minMs": 3.193,
-            "maxMs": 3.193
-          },
-          "samplesMs": [
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792,
-            3.192792
-          ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "tls-inprocess",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.685,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 3.193,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.5,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 103.6,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "varnish-proxyv2-haproxy",
-          "name": "Varnish 9.0.3 (PROXYv2)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 3.072,
-            "meanMs": 3.072,
-            "minMs": 3.072,
-            "maxMs": 3.072
-          },
-          "samplesMs": [
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583,
-            3.071583
-          ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "proxyv2-haproxy",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.737,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 3.072,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.4,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 98.4,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "vinyl-plaintext",
-          "name": "Vinyl c67fd5f57 (plaintext)",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 4.285,
-            "meanMs": 4.285,
-            "minMs": 4.285,
-            "maxMs": 4.285
-          },
-          "samplesMs": [
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525,
-            4.28525
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "plaintext",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.667,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 4.285,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.4,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 107.4,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "vinyl-proxyv2-haproxy",
-          "name": "Vinyl c67fd5f57 (PROXYv2)",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 2.839,
-            "meanMs": 2.839,
-            "minMs": 2.839,
-            "maxMs": 2.839
-          },
-          "samplesMs": [
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291,
-            2.839291
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "proxyv2-haproxy",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.635,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.839,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.5,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 109.4,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "nginx-plaintext",
-          "name": "NGINX stable (plaintext)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 2.934,
-            "meanMs": 2.934,
-            "minMs": 2.934,
-            "maxMs": 2.934
-          },
-          "samplesMs": [
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997,
-            2.9342919999999997
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "plaintext",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.713,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.934,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.5,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 5.7,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "nginx-tls-inprocess",
-          "name": "NGINX stable (TLS)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 2.494,
-            "meanMs": 2.494,
-            "minMs": 2.494,
-            "maxMs": 2.494
-          },
-          "samplesMs": [
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875,
-            2.493875
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "tls-inprocess",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.717,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.494,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.6,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 8.3,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        },
-        {
-          "id": "nginx-proxyv2-haproxy",
-          "name": "NGINX stable (PROXYv2)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 2.13,
-            "meanMs": 2.13,
-            "minMs": 2.13,
-            "maxMs": 2.13
-          },
-          "samplesMs": [
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166,
-            2.130166
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "proxyv2-haproxy",
-            "workload": "hit-path-rps",
-            "targetRps": 5000,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 0.75,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.13,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 4999.5,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            },
-            "rss_mb": {
-              "value": 5.4,
-              "unit": "MB",
-              "label": "Engine RSS"
-            },
-            "hit_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Hit ratio"
-            }
-          }
-        }
-      ],
-      "tests": [
-        {
-          "id": "p50-ttfb",
-          "title": "p50 TTFB",
-          "description": "50th-percentile time to first byte at 5000 rps",
+          "id": "hit-path-rps",
+          "title": "Hit-path TTFB at 5000 rps",
+          "deck": "p99 TTFB at 5000 rps on a 2 KB manifest across three caching proxies and three TLS topologies.",
           "unit": "ms",
           "lowerIsBetter": true,
-          "results": [
+          "verdict": {
+            "winnerId": "nginx-tls-inprocess",
+            "headline": "p99 TTFB ranged from 2.07 ms (NGINX stable (TLS)) to 3.30 ms (Varnish 9.0.3 (plaintext))",
+            "summary": "5000 rps sustained on a 2 KB manifest, warm cache, 20 measured passes per engine-topology pair."
+          },
+          "candidates": [
             {
-              "candidateId": "varnish-plaintext",
-              "value": 0.651
+              "id": "varnish-plaintext",
+              "name": "Varnish 9.0.3 (plaintext)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 25.862, "meanMs": 25.862, "minMs": 25.862, "maxMs": 25.862 },
+              "samplesMs": [25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833, 25.861833],
+              "configuration": { "engine": "varnish", "topology": "plaintext", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.651, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 25.862, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.6, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 149.3, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 0.685
+              "id": "varnish-tls-inprocess",
+              "name": "Varnish 9.0.3 (TLS)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 3.193, "meanMs": 3.193, "minMs": 3.193, "maxMs": 3.193 },
+              "samplesMs": [3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792, 3.192792],
+              "configuration": { "engine": "varnish", "topology": "tls-inprocess", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.685, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 3.193, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.5, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 103.6, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 0.737
+              "id": "varnish-proxyv2-haproxy",
+              "name": "Varnish 9.0.3 (PROXYv2)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 3.072, "meanMs": 3.072, "minMs": 3.072, "maxMs": 3.072 },
+              "samplesMs": [3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583, 3.071583],
+              "configuration": { "engine": "varnish", "topology": "proxyv2-haproxy", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.737, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 3.072, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.4, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 98.4, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "vinyl-plaintext",
-              "value": 0.667
+              "id": "vinyl-plaintext",
+              "name": "Vinyl c67fd5f57 (plaintext)",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 4.285, "meanMs": 4.285, "minMs": 4.285, "maxMs": 4.285 },
+              "samplesMs": [4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525, 4.28525],
+              "configuration": { "engine": "vinyl", "topology": "plaintext", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.667, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 4.285, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.4, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 107.4, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 0.635
+              "id": "vinyl-proxyv2-haproxy",
+              "name": "Vinyl c67fd5f57 (PROXYv2)",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 2.839, "meanMs": 2.839, "minMs": 2.839, "maxMs": 2.839 },
+              "samplesMs": [2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291, 2.839291],
+              "configuration": { "engine": "vinyl", "topology": "proxyv2-haproxy", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.635, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.839, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.5, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 109.4, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "nginx-plaintext",
-              "value": 0.713
+              "id": "nginx-plaintext",
+              "name": "NGINX stable (plaintext)",
+              "version": "stable",
+              "statistics": { "medianMs": 2.934, "meanMs": 2.934, "minMs": 2.934, "maxMs": 2.934 },
+              "samplesMs": [2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997, 2.9342919999999997],
+              "configuration": { "engine": "nginx", "topology": "plaintext", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.713, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.934, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.5, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 5.7, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 0.717
+              "id": "nginx-tls-inprocess",
+              "name": "NGINX stable (TLS)",
+              "version": "stable",
+              "statistics": { "medianMs": 2.494, "meanMs": 2.494, "minMs": 2.494, "maxMs": 2.494 },
+              "samplesMs": [2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875, 2.493875],
+              "configuration": { "engine": "nginx", "topology": "tls-inprocess", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.717, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.494, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.6, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 8.3, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
             },
             {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 0.75
+              "id": "nginx-proxyv2-haproxy",
+              "name": "NGINX stable (PROXYv2)",
+              "version": "stable",
+              "statistics": { "medianMs": 2.13, "meanMs": 2.13, "minMs": 2.13, "maxMs": 2.13 },
+              "samplesMs": [2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166, 2.130166],
+              "configuration": { "engine": "nginx", "topology": "proxyv2-haproxy", "workload": "hit-path-rps", "targetRps": 5000, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 0.75, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.13, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 4999.5, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" },
+                "rss_mb": { "value": 5.4, "unit": "MB", "label": "Engine RSS" },
+                "hit_ratio": { "value": 100, "unit": "%", "label": "Hit ratio" }
+              }
+            }
+          ],
+          "tests": [
+            {
+              "id": "p50-ttfb",
+              "title": "p50 TTFB",
+              "description": "50th-percentile time to first byte at 5000 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 0.651 },
+                { "candidateId": "varnish-tls-inprocess", "value": 0.685 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 0.737 },
+                { "candidateId": "vinyl-plaintext", "value": 0.667 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 0.635 },
+                { "candidateId": "nginx-plaintext", "value": 0.713 },
+                { "candidateId": "nginx-tls-inprocess", "value": 0.717 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 0.75 }
+              ]
+            },
+            {
+              "id": "p99-ttfb",
+              "title": "p99 TTFB",
+              "description": "99th-percentile time to first byte at 5000 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 25.862 },
+                { "candidateId": "varnish-tls-inprocess", "value": 3.193 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 3.072 },
+                { "candidateId": "vinyl-plaintext", "value": 4.285 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 2.839 },
+                { "candidateId": "nginx-plaintext", "value": 2.934 },
+                { "candidateId": "nginx-tls-inprocess", "value": 2.494 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 2.13 }
+              ]
             }
           ]
         },
         {
-          "id": "p99-ttfb",
-          "title": "p99 TTFB",
-          "description": "99th-percentile time to first byte at 5000 rps",
+          "id": "segment-serve",
+          "title": "4 MB segment serve",
+          "deck": "4 MB segment delivery latency, full GET and 64 KB range, at 500 rps.",
           "unit": "ms",
           "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish-plaintext",
-              "value": 25.862
-            },
-            {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 3.193
-            },
-            {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 3.072
-            },
-            {
-              "candidateId": "vinyl-plaintext",
-              "value": 4.285
-            },
-            {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 2.839
-            },
-            {
-              "candidateId": "nginx-plaintext",
-              "value": 2.934
-            },
-            {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 2.494
-            },
-            {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 2.13
-            }
-          ]
-        }
-      ],
-      "limitations": [
-        "Varnish Cache and Vinyl Cache share a maintainer team and a common ancestor commit (63806461); this benchmark measures shipped binaries and configuration only.",
-        "Docker/OrbStack on an M2 Max is a virtualized arm64 rig, not bare-metal x86_64; numbers are relative only.",
-        "Vinyl c67fd5f57 has no in-process TLS listener in this configuration; its TLS-topology coverage is PROXYv2-only.",
-        "NGINX hit/miss accounting is log-derived ($upstream_cache_status), coarser than varnishstat/vinylstat's live counters.",
-        "Purge/ban stampede is out of scope this pass (queued).",
-        "Client, terminator, engine, and origin share one host's CPU/network stack — results reflect relative efficiency under shared contention, not isolated network performance.",
-        "Traffic is synthetic HLS-shaped load, not a captured production trace."
-      ]
-    },
-    {
-      "id": "proxy-hls-segment-serve-2026-08",
-      "slug": "hls-segment-serve",
-      "category": "Caching proxies",
-      "title": "HLS segment serve",
-      "deck": "4 MB segment delivery latency, full GET and 64 KB range, at 500 rps.",
-      "publishedAt": "2026-08-29",
-      "unit": "ms",
-      "lowerIsBetter": true,
-      "verdict": {
-        "winnerId": "varnish-plaintext",
-        "headline": "Full GET p99 TTFB ranged from 2.82 ms (Varnish 9.0.3 (plaintext)) to 69.72 ms (NGINX stable (TLS)); Range GET p99 1.25–3.24 ms",
-        "summary": "4 MB segment at 500 rps, full GET and 64 KB range, warm cache, across eight engine-topology pairs."
-      },
-      "environment": {
-        "machine": "MacBook Pro",
-        "chip": "Apple M2 Max",
-        "cores": "12 CPU cores",
-        "memory": "96 GB",
-        "os": "macOS 26.0",
-        "arch": "arm64",
-        "runtime": "Docker (OrbStack)"
-      },
-      "protocol": {
-        "warmups": 3,
-        "runs": 20,
-        "processModel": "Container per engine, shared origin",
-        "cacheState": "Warm cache after three curl requests (W1/W2) or cold by construction (W3)",
-        "output": "TTFB via oha 1.16.0 with --latency-correction"
-      },
-      "candidates": [
-        {
-          "id": "varnish-plaintext",
-          "name": "Varnish 9.0.3 (plaintext)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 2.951,
-            "meanMs": 2.951,
-            "minMs": 2.951,
-            "maxMs": 2.951
+          "verdict": {
+            "winnerId": "varnish-plaintext",
+            "headline": "Full GET p99 TTFB ranged from 2.82 ms (Varnish 9.0.3 (plaintext)) to 69.72 ms (NGINX stable (TLS)); Range GET p99 1.25–3.24 ms",
+            "summary": "4 MB segment at 500 rps, full GET and 64 KB range, warm cache, across eight engine-topology pairs."
           },
-          "samplesMs": [
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951,
-            2.951
+          "candidates": [
+            {
+              "id": "varnish-plaintext",
+              "name": "Varnish 9.0.3 (plaintext)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 2.951, "meanMs": 2.951, "minMs": 2.951, "maxMs": 2.951 },
+              "samplesMs": [2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951, 2.951],
+              "configuration": { "engine": "varnish", "topology": "plaintext", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 2.152, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.951, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "varnish-tls-inprocess",
+              "name": "Varnish 9.0.3 (TLS)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 8.646, "meanMs": 8.646, "minMs": 8.646, "maxMs": 8.646 },
+              "samplesMs": [8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999, 8.646374999999999],
+              "configuration": { "engine": "varnish", "topology": "tls-inprocess", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 3.492, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 8.646, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "varnish-proxyv2-haproxy",
+              "name": "Varnish 9.0.3 (PROXYv2)",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 24.75, "meanMs": 24.75, "minMs": 24.75, "maxMs": 24.75 },
+              "samplesMs": [24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083, 24.750083],
+              "configuration": { "engine": "varnish", "topology": "proxyv2-haproxy", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 4.706, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 24.75, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "vinyl-plaintext",
+              "name": "Vinyl c67fd5f57 (plaintext)",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 2.716, "meanMs": 2.716, "minMs": 2.716, "maxMs": 2.716 },
+              "samplesMs": [2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917, 2.715917],
+              "configuration": { "engine": "vinyl", "topology": "plaintext", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 1.861, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2.716, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "vinyl-proxyv2-haproxy",
+              "name": "Vinyl c67fd5f57 (PROXYv2)",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 37.902, "meanMs": 37.903, "minMs": 37.902, "maxMs": 37.902 },
+              "samplesMs": [37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996, 37.902499999999996],
+              "configuration": { "engine": "vinyl", "topology": "proxyv2-haproxy", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 4.876, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 37.902, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500.1, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "nginx-plaintext",
+              "name": "NGINX stable (plaintext)",
+              "version": "stable",
+              "statistics": { "medianMs": 5.955, "meanMs": 5.955, "minMs": 5.955, "maxMs": 5.955 },
+              "samplesMs": [5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001, 5.954667000000001],
+              "configuration": { "engine": "nginx", "topology": "plaintext", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 2.008, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 5.955, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "nginx-tls-inprocess",
+              "name": "NGINX stable (TLS)",
+              "version": "stable",
+              "statistics": { "medianMs": 82.674, "meanMs": 82.674, "minMs": 82.674, "maxMs": 82.674 },
+              "samplesMs": [82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542, 82.673542],
+              "configuration": { "engine": "nginx", "topology": "tls-inprocess", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 10.432, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 82.674, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            },
+            {
+              "id": "nginx-proxyv2-haproxy",
+              "name": "NGINX stable (PROXYv2)",
+              "version": "stable",
+              "statistics": { "medianMs": 14.835, "meanMs": 14.835, "minMs": 14.835, "maxMs": 14.835 },
+              "samplesMs": [14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583, 14.834583],
+              "configuration": { "engine": "nginx", "topology": "proxyv2-haproxy", "workload": "segment-serve", "targetRps": 500, "concurrency": 50 },
+              "metrics": {
+                "p50_ttfb": { "value": 5.033, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 14.835, "unit": "ms", "label": "p99 TTFB" },
+                "achieved_rps": { "value": 500, "unit": "rps", "label": "Achieved RPS" },
+                "error_rate": { "value": 0, "unit": "%", "label": "Error rate" }
+              }
+            }
           ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "plaintext",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 2.152,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.951,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "varnish-tls-inprocess",
-          "name": "Varnish 9.0.3 (TLS)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 8.646,
-            "meanMs": 8.646,
-            "minMs": 8.646,
-            "maxMs": 8.646
-          },
-          "samplesMs": [
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999,
-            8.646374999999999
-          ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "tls-inprocess",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 3.492,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 8.646,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "varnish-proxyv2-haproxy",
-          "name": "Varnish 9.0.3 (PROXYv2)",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 24.75,
-            "meanMs": 24.75,
-            "minMs": 24.75,
-            "maxMs": 24.75
-          },
-          "samplesMs": [
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083,
-            24.750083
-          ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "proxyv2-haproxy",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 4.706,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 24.75,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "vinyl-plaintext",
-          "name": "Vinyl c67fd5f57 (plaintext)",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 2.716,
-            "meanMs": 2.716,
-            "minMs": 2.716,
-            "maxMs": 2.716
-          },
-          "samplesMs": [
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917,
-            2.715917
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "plaintext",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 1.861,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2.716,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "vinyl-proxyv2-haproxy",
-          "name": "Vinyl c67fd5f57 (PROXYv2)",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 37.902,
-            "meanMs": 37.903,
-            "minMs": 37.902,
-            "maxMs": 37.902
-          },
-          "samplesMs": [
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996,
-            37.902499999999996
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "proxyv2-haproxy",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 4.876,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 37.902,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500.1,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "nginx-plaintext",
-          "name": "NGINX stable (plaintext)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 5.955,
-            "meanMs": 5.955,
-            "minMs": 5.955,
-            "maxMs": 5.955
-          },
-          "samplesMs": [
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001,
-            5.954667000000001
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "plaintext",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 2.008,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 5.955,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "nginx-tls-inprocess",
-          "name": "NGINX stable (TLS)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 82.674,
-            "meanMs": 82.674,
-            "minMs": 82.674,
-            "maxMs": 82.674
-          },
-          "samplesMs": [
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542,
-            82.673542
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "tls-inprocess",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 10.432,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 82.674,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        },
-        {
-          "id": "nginx-proxyv2-haproxy",
-          "name": "NGINX stable (PROXYv2)",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 14.835,
-            "meanMs": 14.835,
-            "minMs": 14.835,
-            "maxMs": 14.835
-          },
-          "samplesMs": [
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583,
-            14.834583
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "proxyv2-haproxy",
-            "workload": "segment-serve",
-            "targetRps": 500,
-            "concurrency": 50
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 5.033,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 14.835,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "achieved_rps": {
-              "value": 500,
-              "unit": "rps",
-              "label": "Achieved RPS"
-            },
-            "error_rate": {
-              "value": 0,
-              "unit": "%",
-              "label": "Error rate"
-            }
-          }
-        }
-      ],
-      "tests": [
-        {
-          "id": "p50-full-get",
-          "title": "p50 full GET",
-          "description": "50th-percentile TTFB for 4 MB full GET at 500 rps",
-          "unit": "ms",
-          "lowerIsBetter": true,
-          "results": [
+          "tests": [
             {
-              "candidateId": "varnish-plaintext",
-              "value": 2.152
+              "id": "p50-full-get",
+              "title": "p50 full GET",
+              "description": "50th-percentile TTFB for 4 MB full GET at 500 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 2.152 },
+                { "candidateId": "varnish-tls-inprocess", "value": 3.492 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 4.706 },
+                { "candidateId": "vinyl-plaintext", "value": 1.861 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 4.876 },
+                { "candidateId": "nginx-plaintext", "value": 2.008 },
+                { "candidateId": "nginx-tls-inprocess", "value": 10.432 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 5.033 }
+              ]
             },
             {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 3.492
+              "id": "p50-range-get",
+              "title": "p50 range GET",
+              "description": "50th-percentile TTFB for 64 KB range GET at 500 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 0.619 },
+                { "candidateId": "varnish-tls-inprocess", "value": 0.989 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 1.109 },
+                { "candidateId": "vinyl-plaintext", "value": 0.677 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 1.088 },
+                { "candidateId": "nginx-plaintext", "value": 0.802 },
+                { "candidateId": "nginx-tls-inprocess", "value": 0.931 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 1.123 }
+              ]
             },
             {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 4.706
+              "id": "p99-full-get",
+              "title": "p99 full GET",
+              "description": "99th-percentile TTFB for 4 MB full GET at 500 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 2.951 },
+                { "candidateId": "varnish-tls-inprocess", "value": 8.646 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 24.75 },
+                { "candidateId": "vinyl-plaintext", "value": 2.716 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 37.902 },
+                { "candidateId": "nginx-plaintext", "value": 5.955 },
+                { "candidateId": "nginx-tls-inprocess", "value": 82.674 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 14.835 }
+              ]
             },
             {
-              "candidateId": "vinyl-plaintext",
-              "value": 1.861
-            },
-            {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 4.876
-            },
-            {
-              "candidateId": "nginx-plaintext",
-              "value": 2.008
-            },
-            {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 10.432
-            },
-            {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 5.033
+              "id": "p99-range-get",
+              "title": "p99 range GET",
+              "description": "99th-percentile TTFB for 64 KB range GET at 500 rps",
+              "unit": "ms",
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish-plaintext", "value": 1.354 },
+                { "candidateId": "varnish-tls-inprocess", "value": 3.051 },
+                { "candidateId": "varnish-proxyv2-haproxy", "value": 3.575 },
+                { "candidateId": "vinyl-plaintext", "value": 2.388 },
+                { "candidateId": "vinyl-proxyv2-haproxy", "value": 2.975 },
+                { "candidateId": "nginx-plaintext", "value": 3.39 },
+                { "candidateId": "nginx-tls-inprocess", "value": 3.814 },
+                { "candidateId": "nginx-proxyv2-haproxy", "value": 4.006 }
+              ]
             }
           ]
         },
         {
-          "id": "p50-range-get",
-          "title": "p50 range GET",
-          "description": "50th-percentile TTFB for 64 KB range GET at 500 rps",
+          "id": "miss-storm",
+          "title": "Miss-storm coalescing",
+          "deck": "200-client burst on a cold segment, 20 repetitions, plaintext only.",
           "unit": "ms",
           "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish-plaintext",
-              "value": 0.619
-            },
-            {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 0.989
-            },
-            {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 1.109
-            },
-            {
-              "candidateId": "vinyl-plaintext",
-              "value": 0.677
-            },
-            {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 1.088
-            },
-            {
-              "candidateId": "nginx-plaintext",
-              "value": 0.802
-            },
-            {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 0.931
-            },
-            {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 1.123
-            }
-          ]
-        },
-        {
-          "id": "p99-full-get",
-          "title": "p99 full GET",
-          "description": "99th-percentile TTFB for 4 MB full GET at 500 rps",
-          "unit": "ms",
-          "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish-plaintext",
-              "value": 2.951
-            },
-            {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 8.646
-            },
-            {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 24.75
-            },
-            {
-              "candidateId": "vinyl-plaintext",
-              "value": 2.716
-            },
-            {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 37.902
-            },
-            {
-              "candidateId": "nginx-plaintext",
-              "value": 5.955
-            },
-            {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 82.674
-            },
-            {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 14.835
-            }
-          ]
-        },
-        {
-          "id": "p99-range-get",
-          "title": "p99 range GET",
-          "description": "99th-percentile TTFB for 64 KB range GET at 500 rps",
-          "unit": "ms",
-          "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish-plaintext",
-              "value": 1.354
-            },
-            {
-              "candidateId": "varnish-tls-inprocess",
-              "value": 3.051
-            },
-            {
-              "candidateId": "varnish-proxyv2-haproxy",
-              "value": 3.575
-            },
-            {
-              "candidateId": "vinyl-plaintext",
-              "value": 2.388
-            },
-            {
-              "candidateId": "vinyl-proxyv2-haproxy",
-              "value": 2.975
-            },
-            {
-              "candidateId": "nginx-plaintext",
-              "value": 3.39
-            },
-            {
-              "candidateId": "nginx-tls-inprocess",
-              "value": 3.814
-            },
-            {
-              "candidateId": "nginx-proxyv2-haproxy",
-              "value": 4.006
-            }
-          ]
-        }
-      ],
-      "limitations": [
-        "Varnish Cache and Vinyl Cache share a maintainer team and a common ancestor commit (63806461); this benchmark measures shipped binaries and configuration only.",
-        "Docker/OrbStack on an M2 Max is a virtualized arm64 rig, not bare-metal x86_64; numbers are relative only.",
-        "Vinyl c67fd5f57 has no in-process TLS listener in this configuration; its TLS-topology coverage is PROXYv2-only.",
-        "NGINX hit/miss accounting is log-derived ($upstream_cache_status), coarser than varnishstat/vinylstat's live counters.",
-        "Purge/ban stampede is out of scope this pass (queued).",
-        "Client, terminator, engine, and origin share one host's CPU/network stack — results reflect relative efficiency under shared contention, not isolated network performance.",
-        "Traffic is synthetic HLS-shaped load, not a captured production trace."
-      ]
-    },
-    {
-      "id": "proxy-hls-miss-storm-2026-08",
-      "slug": "hls-miss-storm",
-      "category": "Caching proxies",
-      "title": "HLS miss-storm coalescing",
-      "deck": "200-client burst on a cold segment, 20 repetitions, plaintext only.",
-      "publishedAt": "2026-08-29",
-      "unit": "ms",
-      "lowerIsBetter": true,
-      "verdict": {
-        "winnerId": "varnish",
-        "headline": "All three engines coalesced 200 concurrent requests to 1 origin fetch",
-        "summary": "200-client burst on a cold 4 MB segment, 20 repetitions, plaintext only. With proxy_cache_lock_age/timeout set to 30s, NGINX coalesces identically to Varnish and Vinyl."
-      },
-      "environment": {
-        "machine": "MacBook Pro",
-        "chip": "Apple M2 Max",
-        "cores": "12 CPU cores",
-        "memory": "96 GB",
-        "os": "macOS 26.0",
-        "arch": "arm64",
-        "runtime": "Docker (OrbStack)"
-      },
-      "protocol": {
-        "warmups": 3,
-        "runs": 20,
-        "processModel": "Container per engine, shared origin",
-        "cacheState": "Warm cache after three curl requests (W1/W2) or cold by construction (W3)",
-        "output": "TTFB via oha 1.16.0 with --latency-correction"
-      },
-      "candidates": [
-        {
-          "id": "varnish",
-          "name": "Varnish 9.0.3",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 1051.265,
-            "meanMs": 830.455,
-            "minMs": 236.874,
-            "maxMs": 3083.736
+          "verdict": {
+            "winnerId": "varnish",
+            "headline": "All three engines coalesced 200 concurrent requests to 1 origin fetch",
+            "summary": "200-client burst on a cold 4 MB segment, 20 repetitions, plaintext only. With proxy_cache_lock_age/timeout set to 30s, NGINX coalesces identically to Varnish and Vinyl."
           },
-          "samplesMs": [
-            1058.437375,
-            1074.82125,
-            379.556333,
-            1091.462583,
-            312.906792,
-            271.146,
-            1044.093042,
-            289.834291,
-            1130.559208,
-            1087.364458,
-            236.874208,
-            289.240875,
-            307.9975,
-            1076.340625,
-            1066.973459,
-            351.540792,
-            3083.735875,
-            297.36229199999997,
-            1071.873709,
-            1086.973584
+          "candidates": [
+            {
+              "id": "varnish",
+              "name": "Varnish 9.0.3",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 1051.265, "meanMs": 830.455, "minMs": 236.874, "maxMs": 3083.736 },
+              "samplesMs": [1058.437375, 1074.82125, 379.556333, 1091.462583, 312.906792, 271.146, 1044.093042, 289.834291, 1130.559208, 1087.364458, 236.874208, 289.240875, 307.9975, 1076.340625, 1066.973459, 351.540792, 3083.735875, 297.36229199999997, 1071.873709, 1086.973584],
+              "configuration": { "engine": "varnish", "topology": "plaintext", "workload": "miss-storm", "concurrency": 200 },
+              "metrics": {
+                "p50_ttfb": { "value": 1051.265, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2712.632, "unit": "ms", "label": "p99 TTFB" },
+                "avg_origin_requests": { "value": 1, "unit": "", "label": "Avg origin requests per burst" },
+                "coalescing_efficiency": { "value": 200, "unit": "x", "label": "Coalescing efficiency" },
+                "total_origin_requests": { "value": 20, "unit": "", "label": "Total origin requests" },
+                "rss_mb": { "value": 196.6, "unit": "MB", "label": "Engine RSS" }
+              }
+            },
+            {
+              "id": "vinyl",
+              "name": "Vinyl c67fd5f57",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 743.568, "meanMs": 703.702, "minMs": 267.252, "maxMs": 1267.094 },
+              "samplesMs": [1047.066625, 267.25229099999996, 1267.0940420000002, 1080.188417, 279.024417, 332.292333, 289.087333, 1083.8157079999999, 1022.065, 284.696375, 1093.6044169999998, 276.290375, 1030.988333, 1059.201125, 415.849084, 465.071375, 1148.9465830000001, 306.248583, 1056.439541, 268.81175],
+              "configuration": { "engine": "vinyl", "topology": "plaintext", "workload": "miss-storm", "concurrency": 200 },
+              "metrics": {
+                "p50_ttfb": { "value": 743.568, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 1244.646, "unit": "ms", "label": "p99 TTFB" },
+                "avg_origin_requests": { "value": 1, "unit": "", "label": "Avg origin requests per burst" },
+                "coalescing_efficiency": { "value": 200, "unit": "x", "label": "Coalescing efficiency" },
+                "total_origin_requests": { "value": 20, "unit": "", "label": "Total origin requests" },
+                "rss_mb": { "value": 270, "unit": "MB", "label": "Engine RSS" }
+              }
+            },
+            {
+              "id": "nginx",
+              "name": "NGINX stable",
+              "version": "stable",
+              "statistics": { "medianMs": 854.101, "meanMs": 986.612, "minMs": 646.864, "maxMs": 3103.647 },
+              "samplesMs": [871.1286670000001, 1074.392083, 676.4880840000001, 755.382459, 1079.62525, 648.7125, 1059.8524579999998, 1057.636792, 3103.646667, 798.434542, 758.032542, 1061.150625, 646.863959, 668.636708, 770.072, 1066.4353330000001, 656.3997499999999, 1072.3004170000002, 1069.984875, 837.073042],
+              "configuration": { "engine": "nginx", "topology": "plaintext", "workload": "miss-storm", "concurrency": 200 },
+              "metrics": {
+                "p50_ttfb": { "value": 854.101, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 2719.083, "unit": "ms", "label": "p99 TTFB" },
+                "avg_origin_requests": { "value": 1, "unit": "", "label": "Avg origin requests per burst" },
+                "coalescing_efficiency": { "value": 200, "unit": "x", "label": "Coalescing efficiency" },
+                "total_origin_requests": { "value": 20, "unit": "", "label": "Total origin requests" },
+                "rss_mb": { "value": 8.2, "unit": "MB", "label": "Engine RSS" }
+              }
+            }
           ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "plaintext",
-            "workload": "miss-storm",
-            "concurrency": 200
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 1051.265,
+          "tests": [
+            {
+              "id": "p50-ttfb",
+              "title": "p50 TTFB",
+              "description": "50th-percentile TTFB per 200-client burst on a cold segment",
               "unit": "ms",
-              "label": "p50 TTFB"
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish", "value": 1051.265 },
+                { "candidateId": "vinyl", "value": 743.568 },
+                { "candidateId": "nginx", "value": 854.101 }
+              ]
             },
-            "p99_ttfb": {
-              "value": 2712.632,
+            {
+              "id": "p99-ttfb",
+              "title": "p99 TTFB",
+              "description": "99th-percentile TTFB per 200-client burst on a cold segment",
               "unit": "ms",
-              "label": "p99 TTFB"
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish", "value": 2712.632 },
+                { "candidateId": "vinyl", "value": 1244.646 },
+                { "candidateId": "nginx", "value": 2719.083 }
+              ]
             },
-            "avg_origin_requests": {
-              "value": 1,
-              "unit": "",
-              "label": "Avg origin requests per burst"
-            },
-            "coalescing_efficiency": {
-              "value": 200,
+            {
+              "id": "coalescing",
+              "title": "Coalescing efficiency",
+              "description": "Ratio of concurrent clients to origin requests (200x = perfect coalescing)",
               "unit": "x",
-              "label": "Coalescing efficiency"
-            },
-            "total_origin_requests": {
-              "value": 20,
-              "unit": "",
-              "label": "Total origin requests"
-            },
-            "rss_mb": {
-              "value": 196.6,
-              "unit": "MB",
-              "label": "Engine RSS"
+              "lowerIsBetter": false,
+              "results": [
+                { "candidateId": "varnish", "value": 200 },
+                { "candidateId": "vinyl", "value": 200 },
+                { "candidateId": "nginx", "value": 200 }
+              ]
             }
-          }
+          ]
         },
         {
-          "id": "vinyl",
-          "name": "Vinyl c67fd5f57",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 743.568,
-            "meanMs": 703.702,
-            "minMs": 267.252,
-            "maxMs": 1267.094
-          },
-          "samplesMs": [
-            1047.066625,
-            267.25229099999996,
-            1267.0940420000002,
-            1080.188417,
-            279.024417,
-            332.292333,
-            289.087333,
-            1083.8157079999999,
-            1022.065,
-            284.696375,
-            1093.6044169999998,
-            276.290375,
-            1030.988333,
-            1059.201125,
-            415.849084,
-            465.071375,
-            1148.9465830000001,
-            306.248583,
-            1056.439541,
-            268.81175
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "plaintext",
-            "workload": "miss-storm",
-            "concurrency": 200
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 743.568,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 1244.646,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "avg_origin_requests": {
-              "value": 1,
-              "unit": "",
-              "label": "Avg origin requests per burst"
-            },
-            "coalescing_efficiency": {
-              "value": 200,
-              "unit": "x",
-              "label": "Coalescing efficiency"
-            },
-            "total_origin_requests": {
-              "value": 20,
-              "unit": "",
-              "label": "Total origin requests"
-            },
-            "rss_mb": {
-              "value": 270,
-              "unit": "MB",
-              "label": "Engine RSS"
-            }
-          }
-        },
-        {
-          "id": "nginx",
-          "name": "NGINX stable",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 854.101,
-            "meanMs": 986.612,
-            "minMs": 646.864,
-            "maxMs": 3103.647
-          },
-          "samplesMs": [
-            871.1286670000001,
-            1074.392083,
-            676.4880840000001,
-            755.382459,
-            1079.62525,
-            648.7125,
-            1059.8524579999998,
-            1057.636792,
-            3103.646667,
-            798.434542,
-            758.032542,
-            1061.150625,
-            646.863959,
-            668.636708,
-            770.072,
-            1066.4353330000001,
-            656.3997499999999,
-            1072.3004170000002,
-            1069.984875,
-            837.073042
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "plaintext",
-            "workload": "miss-storm",
-            "concurrency": 200
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 854.101,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 2719.083,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "avg_origin_requests": {
-              "value": 1,
-              "unit": "",
-              "label": "Avg origin requests per burst"
-            },
-            "coalescing_efficiency": {
-              "value": 200,
-              "unit": "x",
-              "label": "Coalescing efficiency"
-            },
-            "total_origin_requests": {
-              "value": 20,
-              "unit": "",
-              "label": "Total origin requests"
-            },
-            "rss_mb": {
-              "value": 8.2,
-              "unit": "MB",
-              "label": "Engine RSS"
-            }
-          }
-        }
-      ],
-      "tests": [
-        {
-          "id": "p50-ttfb",
-          "title": "p50 TTFB",
-          "description": "50th-percentile TTFB per 200-client burst on a cold segment",
+          "id": "origin-flap",
+          "title": "Origin-flap grace",
+          "deck": "Grace/stale-if-error behavior across five origin failure cycles.",
           "unit": "ms",
           "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish",
-              "value": 1051.265
-            },
-            {
-              "candidateId": "vinyl",
-              "value": 743.568
-            },
-            {
-              "candidateId": "nginx",
-              "value": 854.101
-            }
-          ]
-        },
-        {
-          "id": "p99-ttfb",
-          "title": "p99 TTFB",
-          "description": "99th-percentile TTFB per 200-client burst on a cold segment",
-          "unit": "ms",
-          "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish",
-              "value": 2712.632
-            },
-            {
-              "candidateId": "vinyl",
-              "value": 1244.646
-            },
-            {
-              "candidateId": "nginx",
-              "value": 2719.083
-            }
-          ]
-        },
-        {
-          "id": "coalescing",
-          "title": "Coalescing efficiency",
-          "description": "Ratio of concurrent clients to origin requests (200x = perfect coalescing)",
-          "unit": "x",
-          "lowerIsBetter": false,
-          "results": [
-            {
-              "candidateId": "varnish",
-              "value": 200
-            },
-            {
-              "candidateId": "vinyl",
-              "value": 200
-            },
-            {
-              "candidateId": "nginx",
-              "value": 200
-            }
-          ]
-        }
-      ],
-      "limitations": [
-        "Varnish Cache and Vinyl Cache share a maintainer team and a common ancestor commit (63806461); this benchmark measures shipped binaries and configuration only.",
-        "Docker/OrbStack on an M2 Max is a virtualized arm64 rig, not bare-metal x86_64; numbers are relative only.",
-        "Vinyl c67fd5f57 has no in-process TLS listener in this configuration; its TLS-topology coverage is PROXYv2-only.",
-        "NGINX hit/miss accounting is log-derived ($upstream_cache_status), coarser than varnishstat/vinylstat's live counters.",
-        "Purge/ban stampede is out of scope this pass (queued).",
-        "Client, terminator, engine, and origin share one host's CPU/network stack — results reflect relative efficiency under shared contention, not isolated network performance.",
-        "Traffic is synthetic HLS-shaped load, not a captured production trace."
-      ]
-    },
-    {
-      "id": "proxy-hls-origin-flap-2026-08",
-      "slug": "hls-origin-flap",
-      "category": "Caching proxies",
-      "title": "HLS origin-flap grace",
-      "deck": "Grace/stale-if-error behavior across five origin failure cycles.",
-      "publishedAt": "2026-08-29",
-      "unit": "ms",
-      "lowerIsBetter": true,
-      "verdict": {
-        "winnerId": "nginx",
-        "headline": "All three engines maintained 100% grace hit ratio across five origin failure cycles",
-        "summary": "Five origin failure cycles, grace/stale-if-error responses measured at plaintext."
-      },
-      "environment": {
-        "machine": "MacBook Pro",
-        "chip": "Apple M2 Max",
-        "cores": "12 CPU cores",
-        "memory": "96 GB",
-        "os": "macOS 26.0",
-        "arch": "arm64",
-        "runtime": "Docker (OrbStack)"
-      },
-      "protocol": {
-        "warmups": 3,
-        "runs": 20,
-        "processModel": "Container per engine, shared origin",
-        "cacheState": "Warm cache after three curl requests (W1/W2) or cold by construction (W3)",
-        "output": "TTFB via oha 1.16.0 with --latency-correction"
-      },
-      "candidates": [
-        {
-          "id": "varnish",
-          "name": "Varnish 9.0.3",
-          "version": "9.0.3",
-          "statistics": {
-            "medianMs": 6.139,
-            "meanMs": 6.421,
-            "minMs": 5.193,
-            "maxMs": 8.478
+          "verdict": {
+            "winnerId": "nginx",
+            "headline": "All three engines maintained 100% grace hit ratio across five origin failure cycles",
+            "summary": "Five origin failure cycles, grace/stale-if-error responses measured at plaintext."
           },
-          "samplesMs": [
-            8.477875,
-            8.404125,
-            7.632916,
-            5.27925,
-            6.502083,
-            7.025416,
-            6.5625,
-            6.989209,
-            5.8345,
-            6.138625,
-            6.104375,
-            5.251709,
-            5.192833,
-            5.532625,
-            5.390375000000001
+          "candidates": [
+            {
+              "id": "varnish",
+              "name": "Varnish 9.0.3",
+              "version": "9.0.3",
+              "statistics": { "medianMs": 6.139, "meanMs": 6.421, "minMs": 5.193, "maxMs": 8.478 },
+              "samplesMs": [8.477875, 8.404125, 7.632916, 5.27925, 6.502083, 7.025416, 6.5625, 6.989209, 5.8345, 6.138625, 6.104375, 5.251709, 5.192833, 5.532625, 5.390375000000001],
+              "configuration": { "engine": "varnish", "topology": "plaintext", "workload": "origin-flap", "concurrency": 10 },
+              "metrics": {
+                "p50_ttfb": { "value": 6.139, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 8.468, "unit": "ms", "label": "p99 TTFB" },
+                "grace_served": { "value": 9999, "unit": "", "label": "Grace responses during flap" },
+                "errors_served": { "value": 0, "unit": "", "label": "Error responses during flap" },
+                "grace_ratio": { "value": 100, "unit": "%", "label": "Grace hit ratio" },
+                "rss_mb": { "value": 94.4, "unit": "MB", "label": "Engine RSS" }
+              }
+            },
+            {
+              "id": "vinyl",
+              "name": "Vinyl c67fd5f57",
+              "version": "c67fd5f57",
+              "statistics": { "medianMs": 5.344, "meanMs": 5.424, "minMs": 4.764, "maxMs": 8.159 },
+              "samplesMs": [8.158875, 5.204833, 5.480792, 5.367375, 4.764208, 5.064666, 5.372375000000001, 5.0015, 5.130542, 5.354708, 5.15075, 5.35875, 5.343999999999999, 5.455083, 5.145916000000001],
+              "configuration": { "engine": "vinyl", "topology": "plaintext", "workload": "origin-flap", "concurrency": 10 },
+              "metrics": {
+                "p50_ttfb": { "value": 5.344, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 7.784, "unit": "ms", "label": "p99 TTFB" },
+                "grace_served": { "value": 10000, "unit": "", "label": "Grace responses during flap" },
+                "errors_served": { "value": 0, "unit": "", "label": "Error responses during flap" },
+                "grace_ratio": { "value": 100, "unit": "%", "label": "Grace hit ratio" },
+                "rss_mb": { "value": 106.2, "unit": "MB", "label": "Engine RSS" }
+              }
+            },
+            {
+              "id": "nginx",
+              "name": "NGINX stable",
+              "version": "stable",
+              "statistics": { "medianMs": 6.472, "meanMs": 6.422, "minMs": 5.842, "maxMs": 7.131 },
+              "samplesMs": [6.472084000000001, 6.550083, 6.036542, 5.841791, 5.9200420000000005, 6.594458, 6.495833, 6.385625, 6.907958, 6.55775, 6.128792, 6.194624999999999, 7.130708, 6.799833, 6.317291],
+              "configuration": { "engine": "nginx", "topology": "plaintext", "workload": "origin-flap", "concurrency": 10 },
+              "metrics": {
+                "p50_ttfb": { "value": 6.472, "unit": "ms", "label": "p50 TTFB" },
+                "p99_ttfb": { "value": 7.1, "unit": "ms", "label": "p99 TTFB" },
+                "grace_served": { "value": 9999, "unit": "", "label": "Grace responses during flap" },
+                "errors_served": { "value": 0, "unit": "", "label": "Error responses during flap" },
+                "grace_ratio": { "value": 100, "unit": "%", "label": "Grace hit ratio" },
+                "rss_mb": { "value": 5.9, "unit": "MB", "label": "Engine RSS" }
+              }
+            }
           ],
-          "configuration": {
-            "engine": "varnish",
-            "topology": "plaintext",
-            "workload": "origin-flap",
-            "concurrency": 10
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 6.139,
+          "tests": [
+            {
+              "id": "p50-ttfb",
+              "title": "p50 TTFB",
+              "description": "50th-percentile TTFB during origin failure cycles",
               "unit": "ms",
-              "label": "p50 TTFB"
+              "lowerIsBetter": true,
+              "results": [
+                { "candidateId": "varnish", "value": 6.139 },
+                { "candidateId": "vinyl", "value": 5.344 },
+                { "candidateId": "nginx", "value": 6.472 }
+              ]
             },
-            "p99_ttfb": {
-              "value": 8.468,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "grace_served": {
-              "value": 9999,
-              "unit": "",
-              "label": "Grace responses during flap"
-            },
-            "errors_served": {
-              "value": 0,
-              "unit": "",
-              "label": "Error responses during flap"
-            },
-            "grace_ratio": {
-              "value": 100,
+            {
+              "id": "grace-ratio",
+              "title": "Grace hit ratio",
+              "description": "Percentage of requests served from stale cache during origin failure",
               "unit": "%",
-              "label": "Grace hit ratio"
-            },
-            "rss_mb": {
-              "value": 94.4,
-              "unit": "MB",
-              "label": "Engine RSS"
-            }
-          }
-        },
-        {
-          "id": "vinyl",
-          "name": "Vinyl c67fd5f57",
-          "version": "c67fd5f57",
-          "statistics": {
-            "medianMs": 5.344,
-            "meanMs": 5.424,
-            "minMs": 4.764,
-            "maxMs": 8.159
-          },
-          "samplesMs": [
-            8.158875,
-            5.204833,
-            5.480792,
-            5.367375,
-            4.764208,
-            5.064666,
-            5.372375000000001,
-            5.0015,
-            5.130542,
-            5.354708,
-            5.15075,
-            5.35875,
-            5.343999999999999,
-            5.455083,
-            5.145916000000001
-          ],
-          "configuration": {
-            "engine": "vinyl",
-            "topology": "plaintext",
-            "workload": "origin-flap",
-            "concurrency": 10
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 5.344,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 7.784,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "grace_served": {
-              "value": 10000,
-              "unit": "",
-              "label": "Grace responses during flap"
-            },
-            "errors_served": {
-              "value": 0,
-              "unit": "",
-              "label": "Error responses during flap"
-            },
-            "grace_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Grace hit ratio"
-            },
-            "rss_mb": {
-              "value": 106.2,
-              "unit": "MB",
-              "label": "Engine RSS"
-            }
-          }
-        },
-        {
-          "id": "nginx",
-          "name": "NGINX stable",
-          "version": "stable",
-          "statistics": {
-            "medianMs": 6.472,
-            "meanMs": 6.422,
-            "minMs": 5.842,
-            "maxMs": 7.131
-          },
-          "samplesMs": [
-            6.472084000000001,
-            6.550083,
-            6.036542,
-            5.841791,
-            5.9200420000000005,
-            6.594458,
-            6.495833,
-            6.385625,
-            6.907958,
-            6.55775,
-            6.128792,
-            6.194624999999999,
-            7.130708,
-            6.799833,
-            6.317291
-          ],
-          "configuration": {
-            "engine": "nginx",
-            "topology": "plaintext",
-            "workload": "origin-flap",
-            "concurrency": 10
-          },
-          "metrics": {
-            "p50_ttfb": {
-              "value": 6.472,
-              "unit": "ms",
-              "label": "p50 TTFB"
-            },
-            "p99_ttfb": {
-              "value": 7.1,
-              "unit": "ms",
-              "label": "p99 TTFB"
-            },
-            "grace_served": {
-              "value": 9999,
-              "unit": "",
-              "label": "Grace responses during flap"
-            },
-            "errors_served": {
-              "value": 0,
-              "unit": "",
-              "label": "Error responses during flap"
-            },
-            "grace_ratio": {
-              "value": 100,
-              "unit": "%",
-              "label": "Grace hit ratio"
-            },
-            "rss_mb": {
-              "value": 5.9,
-              "unit": "MB",
-              "label": "Engine RSS"
-            }
-          }
-        }
-      ],
-      "tests": [
-        {
-          "id": "p50-ttfb",
-          "title": "p50 TTFB",
-          "description": "50th-percentile TTFB during origin failure cycles",
-          "unit": "ms",
-          "lowerIsBetter": true,
-          "results": [
-            {
-              "candidateId": "varnish",
-              "value": 6.139
-            },
-            {
-              "candidateId": "vinyl",
-              "value": 5.344
-            },
-            {
-              "candidateId": "nginx",
-              "value": 6.472
-            }
-          ]
-        },
-        {
-          "id": "grace-ratio",
-          "title": "Grace hit ratio",
-          "description": "Percentage of requests served from stale cache during origin failure",
-          "unit": "%",
-          "lowerIsBetter": false,
-          "results": [
-            {
-              "candidateId": "varnish",
-              "value": 100
-            },
-            {
-              "candidateId": "vinyl",
-              "value": 100
-            },
-            {
-              "candidateId": "nginx",
-              "value": 100
+              "lowerIsBetter": false,
+              "results": [
+                { "candidateId": "varnish", "value": 100 },
+                { "candidateId": "vinyl", "value": 100 },
+                { "candidateId": "nginx", "value": 100 }
+              ]
             }
           ]
         }

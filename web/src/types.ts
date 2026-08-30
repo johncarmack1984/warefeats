@@ -46,7 +46,24 @@ export interface Benchmark {
   candidates: Candidate[];
   /** Individual tests, each charted on its own. Absent entries derive four from the timing statistics. */
   tests?: BenchmarkTest[];
+  /** Titled sub-benchmarks, each with its own candidates and charts. When present, top-level candidates may be empty. */
+  sections?: BenchmarkSection[];
   limitations: string[];
+}
+
+export interface BenchmarkSection {
+  id: string;
+  title: string;
+  deck: string;
+  unit: string;
+  lowerIsBetter: boolean;
+  verdict: {
+    winnerId: string;
+    headline: string;
+    summary: string;
+  };
+  candidates: Candidate[];
+  tests?: BenchmarkTest[];
 }
 
 /** One charted test in the barefeats sense: a title, what was measured, and one value per candidate. */

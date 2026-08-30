@@ -14,13 +14,31 @@ export function parseCatalog(value: unknown): BenchmarkCatalog {
       throw new Error("A benchmark entry is incomplete.");
     }
 
-    if (benchmark.candidates.length < 2) {
+    const hasSections = Array.isArray(benchmark.sections) && benchmark.sections.length > 0;
+
+    if (!hasSections && benchmark.candidates.length < 2) {
       throw new Error(`Benchmark ${benchmark.id} needs at least two candidates.`);
     }
 
     for (const candidate of benchmark.candidates) {
       if (!isRecord(candidate) || typeof candidate.id !== "string" || !isRecord(candidate.statistics) || !Array.isArray(candidate.samplesMs)) {
         throw new Error(`Benchmark ${benchmark.id} contains an invalid candidate.`);
+      }
+    }
+
+    if (hasSections) {
+      for (const section of benchmark.sections as unknown[]) {
+        if (!isRecord(section) || typeof section.id !== "string" || !Array.isArray(section.candidates)) {
+          throw new Error(`Benchmark ${benchmark.id} has an invalid section.`);
+        }
+        if (section.candidates.length < 2) {
+          throw new Error(`Section ${section.id} in ${benchmark.id} needs at least two candidates.`);
+        }
+        for (const candidate of section.candidates) {
+          if (!isRecord(candidate) || typeof candidate.id !== "string" || !isRecord(candidate.statistics) || !Array.isArray(candidate.samplesMs)) {
+            throw new Error(`Section ${section.id} in ${benchmark.id} contains an invalid candidate.`);
+          }
+        }
       }
     }
   }

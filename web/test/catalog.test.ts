@@ -102,6 +102,68 @@ describe("catalog validation", () => {
   test("rejects comparisons with fewer than two candidates", () => {
     expect(() => parseCatalog({ schemaVersion: 1, queue: [], benchmarks: [{ id: "one", title: "One", candidates: [] }] })).toThrow("at least two candidates");
   });
+
+  test("accepts benchmarks with sections instead of top-level candidates", () => {
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-29T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "test-sections",
+        slug: "test-sections",
+        category: "Test",
+        title: "Sections test",
+        deck: "A test",
+        publishedAt: "2026-08-29",
+        unit: "ms",
+        lowerIsBetter: true,
+        verdict: { winnerId: "mixed", headline: "Mixed", summary: "No single winner" },
+        environment: { machine: "Test", chip: "Test", cores: "1", memory: "1 GB", os: "Test", arch: "arm64", runtime: "Docker" },
+        protocol: { warmups: 3, runs: 20, processModel: "container", cacheState: "warm", output: "TTFB" },
+        candidates: [],
+        sections: [
+          {
+            id: "s1",
+            title: "Section 1",
+            deck: "First section",
+            unit: "ms",
+            lowerIsBetter: true,
+            verdict: { winnerId: "a", headline: "A wins", summary: "A faster" },
+            candidates: [
+              { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+              { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+            ],
+          },
+        ],
+        limitations: ["Test only"],
+      }],
+    });
+    expect(catalog.benchmarks[0]!.sections!.length).toBe(1);
+  });
+
+  test("rejects sections with fewer than two candidates", () => {
+    expect(() => parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-08-29T00:00:00Z",
+      queue: [],
+      benchmarks: [{
+        id: "bad-section",
+        title: "Bad",
+        candidates: [],
+        sections: [{ id: "s1", candidates: [{ id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] }] }],
+      }],
+    })).toThrow("at least two candidates");
+  });
+
+  test("loads the published sections benchmark with four sections", async () => {
+    const catalog = await loadCatalog();
+    const proxy = catalog.benchmarks.find((b) => b.sections?.length);
+    expect(proxy).toBeDefined();
+    expect(proxy!.sections!.length).toBe(4);
+    for (const section of proxy!.sections!) {
+      expect(section.candidates.length).toBeGreaterThanOrEqual(2);
+    }
+  });
 });
 
 describe("routes", () => {
@@ -118,6 +180,7 @@ describe("routes", () => {
     expect(paths).toContain("/methodology/");
     expect(paths).toContain("/about/");
     expect(paths).toContain("/benchmarks/eslint-vs-biome-javascript-lint/");
+    expect(paths).toContain("/benchmarks/http-caching-proxies-hls/");
   });
 
   test("builds benchmark metadata from the catalog", async () => {

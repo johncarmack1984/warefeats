@@ -51,6 +51,10 @@ export interface Summary {
  * with the propagated uncertainty ratio * sqrt((σa/μa)² + (σb/μb)²).
  */
 export function summarize(benchmark: Benchmark): Summary {
+  if (benchmark.candidates.length === 0) {
+    return { winner: { id: "", name: "", version: "", statistics: { medianMs: 0, meanMs: 0, minMs: 0, maxMs: 0 }, samplesMs: [] }, comparisons: [] };
+  }
+
   const winner = benchmark.candidates.find((candidate) => candidate.id === benchmark.verdict.winnerId) ?? benchmark.candidates[0];
 
   if (!winner) {
