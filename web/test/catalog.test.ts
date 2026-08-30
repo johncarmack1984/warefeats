@@ -1,11 +1,14 @@
 import { describe, expect, test } from "bun:test";
+import { assembleCatalog } from "../scripts/assemble";
 import { parseCatalog } from "../src/catalog";
 import { headTags, normalizePath, prerenderPaths, routeMeta } from "../src/head";
 import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, standardDeviation, summarize } from "../src/metrics";
+import type { BenchmarkCatalog } from "../src/types";
 
+let _catalog: BenchmarkCatalog | undefined;
 async function loadCatalog() {
-  const file = Bun.file(new URL("../public/data/benchmarks.json", import.meta.url));
-  return parseCatalog(await file.json());
+  if (!_catalog) _catalog = await assembleCatalog();
+  return _catalog;
 }
 
 describe("benchmark catalog", () => {
@@ -64,6 +67,43 @@ describe("benchmark catalog", () => {
     expect(ticks[0]).toBeGreaterThanOrEqual(71);
     expect(ticks[ticks.length - 1]).toBeLessThanOrEqual(110);
     expect(ticks.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("catalog assembly", () => {
+  test("assembles the full catalog from registry + cache", async () => {
+    const catalog = await assembleCatalog();
+
+    expect(catalog.schemaVersion).toBe(1);
+    expect(catalog.generatedAt).toBeTruthy();
+    expect(catalog.benchmarks).toHaveLength(2);
+    expect(catalog.queue.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("sets runnerUrl from the registry repo", async () => {
+    const catalog = await assembleCatalog();
+
+    expect(catalog.benchmarks[0]!.runnerUrl).toBe("https://github.com/warefeats/js-linter-tools");
+    expect(catalog.benchmarks[1]!.runnerUrl).toBe("https://github.com/warefeats/http-caching-proxies");
+  });
+
+  test("merges the primary run into the legacy shape", async () => {
+    const catalog = await assembleCatalog();
+    const lint = catalog.benchmarks[0]!;
+
+    expect(lint.id).toBe("lint-js-eslint-biome-2026-08");
+    expect(lint.environment.chip).toBe("Apple M2 Max");
+    expect(lint.protocol.runs).toBe(20);
+    expect(lint.candidates.length).toBe(2);
+  });
+
+  test("preserves sections on a sections-based benchmark", async () => {
+    const catalog = await assembleCatalog();
+    const proxy = catalog.benchmarks[1]!;
+
+    expect(proxy.sections).toBeDefined();
+    expect(proxy.sections!.length).toBe(4);
+    expect(proxy.candidates).toEqual([]);
   });
 });
 
