@@ -67,8 +67,11 @@ setup-oidc:
         --template-file infra/github-oidc-role.yml \
         --stack-name warefeats-github-oidc \
         --capabilities CAPABILITY_NAMED_IAM \
+        --no-fail-on-empty-changeset \
         --parameter-overrides \
             ExistingOidcProviderArn=arn:aws:iam::735853783919:oidc-provider/token.actions.githubusercontent.com \
+            GitHubOrg=warefeats \
+            GitHubRepository=warefeats.com \
             GitHubOrgId=$GITHUB_ORG_ID \
             GitHubRepositoryId=1346850977
     ROLE_ARN=$(aws cloudformation describe-stacks \
