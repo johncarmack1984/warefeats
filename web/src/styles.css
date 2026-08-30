@@ -1303,7 +1303,7 @@ th.num {
 
 .bar-row {
   display: grid;
-  grid-template-columns: 8.5rem 1fr;
+  grid-template-columns: 10rem 1fr;
   gap: 0.75rem;
   align-items: center;
   font-size: var(--text-sm);
@@ -1316,8 +1316,10 @@ th.num {
   gap: 0.5rem;
   font-weight: 600;
   text-align: right;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
+
+
 
 .bar-label img {
   flex: none;
@@ -1379,7 +1381,14 @@ th.num {
 
 @media (max-width: 40rem) {
   .bar-row {
-    grid-template-columns: 6.5rem 1fr;
+    /* logo and name on their own line above a full-width bar */
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+
+  .bar-label {
+    justify-content: flex-start;
+    text-align: left;
   }
 
   .bar-track {
@@ -1387,7 +1396,7 @@ th.num {
   }
 
   .bar-axis {
-    margin: 0 5rem 0 8rem;
+    margin: 0 5rem 0 0;
   }
 
   .bar-axis:not(.box-axis) .bar-tick:nth-child(even) {
