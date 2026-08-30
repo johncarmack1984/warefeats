@@ -673,7 +673,29 @@ code {
   font-size: var(--text-sm);
 }
 
+.env-toggle {
+  display: flex;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-stretch: 90%;
+}
 
+.env-toggle-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.env-toggle-btn.active {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
 
 .tests h2,
 .products h2,

@@ -1,4 +1,5 @@
 import { DownloadSimple } from "@phosphor-icons/react";
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { useCatalog } from "../catalog-context";
 import { BarChart } from "../components/BarChart";
@@ -10,37 +11,58 @@ import { REPO_URL } from "../components/SiteHeader";
 import { BoxPlot } from "../components/BoxPlot";
 import { CatalogSkeleton, ErrorState } from "../components/States";
 import { benchmarkTests, formatDate } from "../metrics";
+import type { Benchmark } from "../types";
 import { NotFound } from "./NotFound";
 
-export function BenchmarkPage() {
-  const { slug } = useParams();
-  const { state, reload } = useCatalog();
+const BASE_RUN_ID = "__base";
 
-  if (state.status === "loading") {
-    return <CatalogSkeleton />;
-  }
+function EnvironmentToggle({ options, selected, onSelect }: { options: { id: string; label: string }[]; selected: string; onSelect: (id: string) => void }) {
+  return (
+    <div className="env-toggle" aria-label="Test environment">
+      {options.map((option) => (
+        <button key={option.id} aria-pressed={option.id === selected} className={`env-toggle-btn${option.id === selected ? " active" : ""}`} onClick={() => onSelect(option.id)}>
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
-  if (state.status === "error") {
-    return <ErrorState message={state.message} onRetry={reload} />;
-  }
+function useActiveRun(benchmark: Benchmark) {
+  const runs = benchmark.runs ?? [];
+  const hasRuns = runs.length > 0;
+  const [selectedId, setSelectedId] = useState(BASE_RUN_ID);
+  const activeRun = selectedId !== BASE_RUN_ID ? runs.find((r) => r.id === selectedId) : undefined;
+  const toggleOptions = hasRuns ? [{ id: BASE_RUN_ID, label: benchmark.environment.machine }, ...runs] : [];
+  return {
+    hasRuns,
+    selectedId,
+    setSelectedId,
+    toggleOptions,
+    environment: activeRun?.environment ?? benchmark.environment,
+    protocol: activeRun?.protocol ?? benchmark.protocol,
+    sections: activeRun?.sections ?? benchmark.sections,
+    candidates: activeRun?.candidates ?? benchmark.candidates,
+  };
+}
 
-  const benchmark = state.catalog.benchmarks.find((entry) => entry.slug === slug);
+function BenchmarkContent({ benchmark }: { benchmark: Benchmark }) {
+  const run = useActiveRun(benchmark);
 
-  if (!benchmark) {
-    return <NotFound />;
-  }
-
-  if (benchmark.sections?.length) {
+  if ((run.sections ?? benchmark.sections)?.length) {
+    const displaySections = run.sections ?? benchmark.sections ?? [];
     return (
       <article className="benchmark">
         <header className="benchmark-head">
           <p className="crumbs"><Link to="/">Benchmarks</Link> <span aria-hidden="true">/</span> {benchmark.category}</p>
           <h1>{benchmark.title}</h1>
           <p className="deck">{benchmark.deck}</p>
-          <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {benchmark.environment.machine}, {benchmark.environment.chip}</p>
+          <p className="byline">Published <time dateTime={benchmark.publishedAt} className="num">{formatDate(benchmark.publishedAt)}</time> on {run.environment.machine}, {run.environment.chip}</p>
         </header>
 
-        {benchmark.sections.map((section) => {
+        {run.hasRuns && <EnvironmentToggle options={run.toggleOptions} selected={run.selectedId} onSelect={run.setSelectedId} />}
+
+        {displaySections.map((section) => {
           const sectionTests = section.tests ?? [];
           return (
             <section className="benchmark-section" key={section.id} aria-labelledby={`section-${section.id}`}>
@@ -58,7 +80,7 @@ export function BenchmarkPage() {
           );
         })}
 
-        <Conditions benchmark={benchmark} />
+        <Conditions benchmark={{ ...benchmark, environment: run.environment, protocol: run.protocol }} />
 
         <section className="learned" aria-labelledby="learned-title">
           <h2 id="learned-title">What did we learn?</h2>
@@ -157,4 +179,25 @@ export function BenchmarkPage() {
       </section>
     </article>
   );
+}
+
+export function BenchmarkPage() {
+  const { slug } = useParams();
+  const { state, reload } = useCatalog();
+
+  if (state.status === "loading") {
+    return <CatalogSkeleton />;
+  }
+
+  if (state.status === "error") {
+    return <ErrorState message={state.message} onRetry={reload} />;
+  }
+
+  const benchmark = state.catalog.benchmarks.find((entry) => entry.slug === slug);
+
+  if (!benchmark) {
+    return <NotFound />;
+  }
+
+  return <BenchmarkContent benchmark={benchmark} />;
 }

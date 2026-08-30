@@ -49,6 +49,24 @@ export function parseCatalog(value: unknown): BenchmarkCatalog {
         }
       }
     }
+
+    if (Array.isArray(benchmark.runs)) {
+      for (const run of benchmark.runs) {
+        if (!isRecord(run) || typeof run.id !== "string" || typeof run.label !== "string" || !isRecord(run.environment)) {
+          throw new Error(`Benchmark ${benchmark.id} has an invalid run entry.`);
+        }
+        if (Array.isArray(run.sections)) {
+          for (const section of run.sections as unknown[]) {
+            if (!isRecord(section) || typeof section.id !== "string" || !Array.isArray(section.candidates) || section.candidates.length < 2) {
+              throw new Error(`A run in ${benchmark.id} has an invalid section.`);
+            }
+          }
+        }
+        if (Array.isArray(run.candidates) && run.candidates.length > 0 && run.candidates.length < 2) {
+          throw new Error(`A run in ${benchmark.id} needs at least two candidates.`);
+        }
+      }
+    }
   }
 
   return value as unknown as BenchmarkCatalog;
