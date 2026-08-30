@@ -35,35 +35,54 @@ bun run --cwd services/proxy-bench src/run.ts --engine=nginx
 
 ## Results
 
-### W1: Hit-path RPS (2 KB manifest, 5000 rps target, 50 conc, 23s)
+### Runner correction (2026-08-29)
 
-| Engine/Topology | p50 ms | p99 ms | Achieved RPS | Error % | RSS MB |
-|---|---|---|---|---|---|
-| varnish/plaintext | 0.65 | 25.86 | 5000 | 0 | 149.3 |
-| varnish/tls-inprocess | 0.69 | 3.19 | 4999 | 0 | 103.6 |
-| varnish/proxyv2-haproxy | 0.74 | 3.07 | 4999 | 0 | 98.4 |
-| vinyl/plaintext | 0.67 | 4.29 | 4999 | 0 | 107.4 |
-| vinyl/proxyv2-haproxy | 0.63 | 2.84 | 5000 | 0 | 109.4 |
-| nginx/plaintext | 0.71 | 2.93 | 4999 | 0 | 5.7 |
-| nginx/tls-inprocess | 0.72 | 2.49 | 5000 | 0 | 8.3 |
-| nginx/proxyv2-haproxy | 0.75 | 2.13 | 4999 | 0 | 5.4 |
+The first published run of W1 (hit-path) and W2 (segment serve) reported `samplesMs` as a single oha run's aggregate p99 repeated 20 times (`load-runner.ts`, the `Array.from({ length: measuredBuckets }, () => p99Ms)` lines). Sixteen of the twenty-two cells therefore had min = max = median and the "3 warmups + 20 runs" protocol did not hold for them; the hit-path verdict text had also been written from an earlier run and no longer matched its own data. W3 (miss-storm) and W4 (origin-flap) always produced one sample per repetition and are unchanged.
 
-All engines sustained 5000 rps with 0% errors. p50 range: 0.63-0.75 ms. p99 range: 2.13-25.86 ms (varnish/plaintext p99 includes a single-request outlier; p50 is representative).
+The runner now executes 3 warmup passes followed by 20 independent oha passes per cell (fixed rate, `--latency-correction`, 5 s each); each pass's p99 is one sample, `statistics` are computed over the 20 samples, and p50 is the median of the per-pass p50s. All sixteen W1/W2 cells were re-run with this runner; the tables below are from the re-run. Section verdicts are now generated from the candidate statistics by `import.ts`, and the catalog validator rejects any candidate whose samples collapse to a single value when the protocol claims more than one run.
 
-### W2: Segment serve (4 MB, 500 rps, 20 conc, 23s)
+### W1: Hit-path RPS (2 KB manifest, 5000 rps target, 50 conc; 3 warmup + 20 measured passes of 5 s)
 
-| Engine/Topology | Full GET p50 | Full GET p99 | Range GET p50 | Range GET p99 |
-|---|---|---|---|---|
-| varnish/plaintext | 2.15 | 2.95 | 0.62 | 1.35 |
-| varnish/tls-inprocess | 3.49 | 8.65 | 0.99 | 3.05 |
-| varnish/proxyv2-haproxy | 4.71 | 24.75 | 1.11 | 3.58 |
-| vinyl/plaintext | 1.86 | 2.72 | 0.68 | 2.39 |
-| vinyl/proxyv2-haproxy | 4.88 | 37.90 | 1.09 | 2.98 |
-| nginx/plaintext | 2.01 | 5.95 | 0.80 | 3.39 |
-| nginx/tls-inprocess | 10.43 | 82.67 | 0.93 | 3.81 |
-| nginx/proxyv2-haproxy | 5.03 | 14.83 | 1.12 | 4.01 |
+| Engine/Topology | p50 ms (median of passes) | p99 ms (median of passes) | p99 min–max across passes | Achieved RPS | Error % | RSS MB |
+|---|---|---|---|---|---|---|
+| varnish/plaintext | 0.53 | 2.58 | 0.99–11.89 | 4998 | 0 | 98.5 |
+| varnish/tls-inprocess | 0.40 | 3.08 | 0.61–9.20 | 4998 | 0 | 115.3 |
+| varnish/proxyv2-haproxy | 0.45 | 6.00 | 2.98–10.43 | 4998 | 0 | 99.5 |
+| vinyl/plaintext | 0.39 | 0.77 | 0.68–10.10 | 4998 | 0 | 111.0 |
+| vinyl/proxyv2-haproxy | 0.47 | 5.25 | 3.52–8.90 | 4998 | 0 | 114.4 |
+| nginx/plaintext | 0.68 | 2.43 | 1.89–4.83 | 4998 | 0 | 4.6 |
+| nginx/tls-inprocess | 0.38 | 3.43 | 0.93–9.26 | 4998 | 0 | 11.9 |
+| nginx/proxyv2-haproxy | 0.42 | 2.33 | 0.97–8.38 | 4998 | 0 | 5.5 |
 
-All values in ms. Range GET (bytes=0-65535) consistently lower latency than full 4 MB GET. NGINX TLS full GET p99 (82.67 ms) is a notable outlier; range GET p99 on the same topology is 3.81 ms, suggesting the overhead is specific to encrypting the full 4 MB response body.
+All engines sustained the 5000 rps target with 0% errors. Per-pass p99 is noisy on a shared host (see min–max); medians are the comparison.
+
+### W2: Segment serve (4 MB, 500 rps, 20 conc; 3 warmup + 20 measured passes of 5 s)
+
+Full GET:
+
+| Engine/Topology | p50 ms (median of passes) | p99 ms (median of passes) | p99 min–max across passes | Achieved RPS | Error % | RSS MB |
+|---|---|---|---|---|---|---|
+| varnish/plaintext | 1.97 | 2.78 | 2.69–5.74 | 500 | 0 | 95.5 |
+| varnish/tls-inprocess | 3.63 | 10.43 | 9.18–15.32 | 500 | 0 | 102.4 |
+| varnish/proxyv2-haproxy | 5.01 | 17.16 | 13.12–60.36 | 500 | 0 | 95.2 |
+| vinyl/plaintext | 2.15 | 3.03 | 2.72–5.99 | 500 | 0 | 119.1 |
+| vinyl/proxyv2-haproxy | 5.32 | 17.86 | 13.31–433.90 | 500 | 0 | 122.6 |
+| nginx/plaintext | 2.17 | 5.71 | 4.64–12.62 | 500 | 0 | 5.6 |
+| nginx/tls-inprocess | 9.31 | 64.86 | 49.84–108.23 | 500 | 0 | 10.3 |
+| nginx/proxyv2-haproxy | 5.20 | 15.85 | 12.73–21.44 | 500 | 0 | 7.3 |
+
+64 KB Range GET:
+
+| Engine/Topology | p50 ms (median of passes) | p99 ms (median of passes) | p99 min–max across passes | Achieved RPS | Error % | RSS MB |
+|---|---|---|---|---|---|---|
+| varnish/plaintext | 0.39 | 0.98 | 0.55–2.07 | 500 | 0 | 95.5 |
+| varnish/tls-inprocess | 0.46 | 0.96 | 0.72–3.37 | 500 | 0 | 102.4 |
+| varnish/proxyv2-haproxy | 0.75 | 2.81 | 0.00–3.81 | 500 | 0 | 95.2 |
+| vinyl/plaintext | 0.49 | 1.81 | 1.28–36.61 | 500 | 0 | 119.1 |
+| vinyl/proxyv2-haproxy | 0.93 | 3.35 | 2.52–4.81 | 500 | 0 | 122.6 |
+| nginx/plaintext | 0.37 | 1.20 | 0.54–6.64 | 500 | 0 | 5.6 |
+| nginx/tls-inprocess | 0.72 | 3.59 | 1.89–13.91 | 500 | 0 | 10.3 |
+| nginx/proxyv2-haproxy | 0.94 | 3.75 | 3.14–13.89 | 500 | 0 | 7.3 |
 
 ### W3: Miss-storm coalescing (200 concurrent, fresh 4 MB segment per rep, 20 reps, plaintext)
 
@@ -91,6 +110,12 @@ All three engines served stale/grace content with 100% success rate during origi
 
 1. **NGINX TLS segment serve p99 82.67 ms**: The TLS in-process segment serve showed significantly higher p99 than other topologies. Range GET on the same topology was 3.81 ms, suggesting the overhead is specific to encrypting the full 4 MB response body.
 2. **Vinyl RSS higher than Varnish**: vinyl/plaintext RSS consistently higher than varnish/plaintext under equivalent load (107-270 MB vs 95-197 MB). Both configured with `malloc,256m`.
+
+### Re-run notes (2026-08-29)
+
+- The earlier varnish/plaintext hit-path p99 of 25.86 ms was a single-run artifact; across 20 passes the median is 2.58 ms (0.99–11.89 ms).
+- varnish/proxyv2-haproxy Range GET has one pass with p99 = 0.00 ms (oha reported a zero latency bucket); it is kept in the raw samples and has no effect on the median.
+- vinyl/proxyv2-haproxy full GET has one 433.9 ms pass; median 17.9 ms. Shared-host contention spikes of this kind affect every engine (see min–max columns).
 
 ## Config changes from initial run
 

@@ -115,21 +115,41 @@ export async function runW1(session: Session): Promise<CellResult> {
   const config = workloadConfig("hit-path-rps");
   const insecure = session.topology !== "plaintext";
   warmCache(session);
-  console.log(`  W1: hit-path RPS (target ${config.rps} rps, ${config.duration})`);
+  const ohaOpts = { rps: config.rps, concurrency: config.concurrency, duration: config.duration, insecure };
+  console.log(`  W1: hit-path RPS (target ${config.rps} rps, ${config.warmupSeconds} warmup + ${config.measuredBuckets} measured passes, ${config.duration} each)`);
 
-  const result = oha(targetUrl(session, config.path), { rps: config.rps, concurrency: config.concurrency, duration: config.duration, insecure });
+  for (let i = 0; i < config.warmupSeconds; i++) {
+    console.log(`    warmup ${i + 1}/${config.warmupSeconds}`);
+    oha(targetUrl(session, config.path), ohaOpts);
+  }
+
+  const p99Samples: number[] = [];
+  const p50Samples: number[] = [];
+  let totalRps = 0;
+  let maxErr = 0;
+  for (let i = 0; i < config.measuredBuckets; i++) {
+    console.log(`    pass ${i + 1}/${config.measuredBuckets}`);
+    const pass = oha(targetUrl(session, config.path), ohaOpts);
+    p99Samples.push(pass.p99Ms);
+    p50Samples.push(pass.p50Ms);
+    totalRps += pass.rps;
+    maxErr = Math.max(maxErr, pass.errorRate);
+  }
+
+  const avgRps = totalRps / config.measuredBuckets;
+  const medP50 = pct(p50Samples, 0.5);
+  const medP99 = pct(p99Samples, 0.5);
   const stats = await collectStats(session.engine, projectName(session));
-  const samples = Array.from({ length: config.measuredBuckets }, () => result.p99Ms);
 
   return {
     session: { ...session, workload: "hit-path-rps" },
-    samplesMs: samples, p50Ms: result.p50Ms, p99Ms: result.p99Ms,
-    achievedRps: result.rps, errorRate: result.errorRate, engineStats: stats,
+    samplesMs: p99Samples, p50Ms: medP50, p99Ms: medP99,
+    achievedRps: avgRps, errorRate: maxErr, engineStats: stats,
     metrics: {
-      p50_ttfb: { value: r(result.p50Ms, 3), unit: "ms", label: "p50 TTFB" },
-      p99_ttfb: { value: r(result.p99Ms, 3), unit: "ms", label: "p99 TTFB" },
-      achieved_rps: { value: r(result.rps, 1), unit: "rps", label: "Achieved RPS" },
-      error_rate: { value: r(result.errorRate * 100, 2), unit: "%", label: "Error rate" },
+      p50_ttfb: { value: r(medP50, 3), unit: "ms", label: "p50 TTFB" },
+      p99_ttfb: { value: r(medP99, 3), unit: "ms", label: "p99 TTFB" },
+      achieved_rps: { value: r(avgRps, 1), unit: "rps", label: "Achieved RPS" },
+      error_rate: { value: r(maxErr * 100, 2), unit: "%", label: "Error rate" },
       rss_mb: { value: r(stats.rssMb, 1), unit: "MB", label: "Engine RSS" },
       hit_ratio: { value: r((stats.hitRatio ?? 0) * 100, 1), unit: "%", label: "Hit ratio" },
     },
@@ -140,38 +160,76 @@ export async function runW2(session: Session): Promise<CellResult[]> {
   const config = workloadConfig("segment-serve");
   const insecure = session.topology !== "plaintext";
   const results: CellResult[] = [];
+  const url = targetUrl(session, config.path);
 
   warmCache(session);
-  console.log(`  W2: segment serve full GET (target ${config.rps} rps)`);
 
-  const full = oha(targetUrl(session, config.path), { rps: config.rps, concurrency: config.concurrency, duration: config.duration, insecure });
+  // Full GET: warmup + measured passes
+  console.log(`  W2: segment serve full GET (target ${config.rps} rps, ${config.warmupSeconds} warmup + ${config.measuredBuckets} measured, ${config.duration} each)`);
+  const fullOpts = { rps: config.rps, concurrency: config.concurrency, duration: config.duration, insecure };
+  for (let i = 0; i < config.warmupSeconds; i++) {
+    console.log(`    full warmup ${i + 1}/${config.warmupSeconds}`);
+    oha(url, fullOpts);
+  }
+  const fullP99: number[] = [];
+  const fullP50: number[] = [];
+  let fullTotalRps = 0;
+  let fullMaxErr = 0;
+  for (let i = 0; i < config.measuredBuckets; i++) {
+    console.log(`    full pass ${i + 1}/${config.measuredBuckets}`);
+    const pass = oha(url, fullOpts);
+    fullP99.push(pass.p99Ms);
+    fullP50.push(pass.p50Ms);
+    fullTotalRps += pass.rps;
+    fullMaxErr = Math.max(fullMaxErr, pass.errorRate);
+  }
+  const fullAvgRps = fullTotalRps / config.measuredBuckets;
+  const fullMedP50 = pct(fullP50, 0.5);
+  const fullMedP99 = pct(fullP99, 0.5);
   const stats = await collectStats(session.engine, projectName(session));
   results.push({
     session: { ...session, workload: "segment-serve" },
-    samplesMs: Array.from({ length: config.measuredBuckets }, () => full.p99Ms),
-    p50Ms: full.p50Ms, p99Ms: full.p99Ms, achievedRps: full.rps, errorRate: full.errorRate, engineStats: stats,
+    samplesMs: fullP99, p50Ms: fullMedP50, p99Ms: fullMedP99,
+    achievedRps: fullAvgRps, errorRate: fullMaxErr, engineStats: stats,
     metrics: {
-      p50_ttfb: { value: r(full.p50Ms, 3), unit: "ms", label: "p50 TTFB" },
-      p99_ttfb: { value: r(full.p99Ms, 3), unit: "ms", label: "p99 TTFB" },
-      achieved_rps: { value: r(full.rps, 1), unit: "rps", label: "Achieved RPS" },
-      error_rate: { value: r(full.errorRate * 100, 2), unit: "%", label: "Error rate" },
+      p50_ttfb: { value: r(fullMedP50, 3), unit: "ms", label: "p50 TTFB" },
+      p99_ttfb: { value: r(fullMedP99, 3), unit: "ms", label: "p99 TTFB" },
+      achieved_rps: { value: r(fullAvgRps, 1), unit: "rps", label: "Achieved RPS" },
+      error_rate: { value: r(fullMaxErr * 100, 2), unit: "%", label: "Error rate" },
     },
   });
 
-  console.log(`  W2: segment serve Range GET (bytes=0-65535)`);
+  // Range GET: warmup + measured passes
+  console.log(`  W2: segment serve Range GET (bytes=0-65535, ${config.warmupSeconds} warmup + ${config.measuredBuckets} measured, ${config.duration} each)`);
   try {
-    const range = oha(targetUrl(session, config.path), {
-      rps: config.rps, concurrency: config.concurrency, duration: config.duration, insecure,
-      extraHeaders: ["Range: bytes=0-65535"],
-    });
+    const rangeOpts = { ...fullOpts, extraHeaders: ["Range: bytes=0-65535"] };
+    for (let i = 0; i < config.warmupSeconds; i++) {
+      console.log(`    range warmup ${i + 1}/${config.warmupSeconds}`);
+      oha(url, rangeOpts);
+    }
+    const rangeP99: number[] = [];
+    const rangeP50: number[] = [];
+    let rangeTotalRps = 0;
+    let rangeMaxErr = 0;
+    for (let i = 0; i < config.measuredBuckets; i++) {
+      console.log(`    range pass ${i + 1}/${config.measuredBuckets}`);
+      const pass = oha(url, rangeOpts);
+      rangeP99.push(pass.p99Ms);
+      rangeP50.push(pass.p50Ms);
+      rangeTotalRps += pass.rps;
+      rangeMaxErr = Math.max(rangeMaxErr, pass.errorRate);
+    }
+    const rangeAvgRps = rangeTotalRps / config.measuredBuckets;
+    const rangeMedP50 = pct(rangeP50, 0.5);
+    const rangeMedP99 = pct(rangeP99, 0.5);
     results.push({
       session: { ...session, workload: "segment-serve" },
-      samplesMs: Array.from({ length: config.measuredBuckets }, () => range.p99Ms),
-      p50Ms: range.p50Ms, p99Ms: range.p99Ms, achievedRps: range.rps, errorRate: range.errorRate, engineStats: stats,
+      samplesMs: rangeP99, p50Ms: rangeMedP50, p99Ms: rangeMedP99,
+      achievedRps: rangeAvgRps, errorRate: rangeMaxErr, engineStats: stats,
       metrics: {
-        p50_ttfb: { value: r(range.p50Ms, 3), unit: "ms", label: "p50 TTFB (Range)" },
-        p99_ttfb: { value: r(range.p99Ms, 3), unit: "ms", label: "p99 TTFB (Range)" },
-        achieved_rps: { value: r(range.rps, 1), unit: "rps", label: "Achieved RPS (Range)" },
+        p50_ttfb: { value: r(rangeMedP50, 3), unit: "ms", label: "p50 TTFB (Range)" },
+        p99_ttfb: { value: r(rangeMedP99, 3), unit: "ms", label: "p99 TTFB (Range)" },
+        achieved_rps: { value: r(rangeAvgRps, 1), unit: "rps", label: "Achieved RPS (Range)" },
         variant: { value: 1, unit: "", label: "Range GET" },
       },
     });

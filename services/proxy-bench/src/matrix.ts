@@ -24,7 +24,7 @@ const W1_CONFIG: WorkloadConfig = {
   path: "/stream/master.m3u8",
   rps: 5000,
   concurrency: 50,
-  duration: "23s",
+  duration: "5s",
   warmupSeconds: 3,
   measuredBuckets: 20,
 };
@@ -33,7 +33,7 @@ const W2_CONFIG: WorkloadConfig = {
   path: "/stream/segment-0.ts",
   rps: 500,
   concurrency: 20,
-  duration: "23s",
+  duration: "5s",
   warmupSeconds: 3,
   measuredBuckets: 20,
   rangeVariant: true,
