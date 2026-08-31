@@ -30,7 +30,7 @@ export function About() {
       <p>Hosting comes out of my pocket, and later out of ads. If a sponsor ever pays for a bigger rig, that sponsor gets named on every result that ran on it. Nobody but me picks what gets benchmarked or how.</p>
 
       <h2>Logos</h2>
-      <p>Product logos appear unmodified to identify the products under test and imply no endorsement. Varnish is a registered trademark of Varnish Software AB. NGINX is a trademark of F5, Inc. The Vinyl Cache logo is CC BY 4.0 <a href="https://rhubarbe.design" target="_blank" rel="noreferrer">Rhubarbe.design</a>. ESLint and Biome logos belong to their respective projects. The Vite and esbuild logos are MIT-licensed from their respective project repositories.</p>
+      <p>Product logos appear unmodified to identify the products under test and imply no endorsement. Varnish is a registered trademark of Varnish Software AB. NGINX is a trademark of F5, Inc. The Vinyl Cache logo is CC BY 4.0 <a href="https://rhubarbe.design" target="_blank" rel="noreferrer">Rhubarbe.design</a>. ESLint and Biome logos belong to their respective projects. The Vite and esbuild logos are MIT-licensed from their respective project repositories. Redis is a registered trademark of Redis Ltd. Any rights therein are reserved to Redis Ltd. Valkey is a trademark of LF Projects, LLC. Dragonfly is a trademark of DragonflyDB Ltd.</p>
 
       <h2>Corrections</h2>
       <p>Think a result is wrong? Open an issue in the <a href="https://github.com/warefeats/warefeats.com" target="_blank" rel="noreferrer">repository</a> with your rig and your samples. Corrections go up as new runs. The original stays, with a note.</p>
