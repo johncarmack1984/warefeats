@@ -15,6 +15,11 @@
       "slug": "vite-vs-esbuild-vs-tsup-library-build",
       "repo": "warefeats/js-bundlers",
       "ref": "2c9dd055ceb7e80112f024943dff239e01346f36"
+    },
+    {
+      "slug": "redis-vs-valkey-vs-dragonfly-kv",
+      "repo": "warefeats/kv-stores",
+      "ref": "24e766c0baf20cff81d8a435070f08ea5b897259"
     }
   ]
 }

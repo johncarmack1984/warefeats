@@ -10,7 +10,7 @@
       "category": "Caches",
       "title": "Redis vs Valkey vs Dragonfly",
       "question": "Throughput, tail latency, memory pressure",
-      "status": "Planned"
+      "status": "Published"
     },
     {
       "category": "Bundlers",
