@@ -1,0 +1,662 @@
+{
+  "id": "kv-stores-2026-08",
+  "slug": "redis-vs-valkey-vs-dragonfly-kv",
+  "category": "Caches",
+  "title": "Redis vs Valkey vs Dragonfly",
+  "deck": "In-memory SET/GET throughput, pipelining, and memory efficiency — Redis 8 vs Valkey 9 vs Dragonfly 1.40 on dedicated ARM hardware.",
+  "publishedAt": "2026-08-31",
+  "unit": "ms",
+  "lowerIsBetter": true,
+  "verdict": {
+    "winnerId": "dragonfly",
+    "headline": "Dragonfly led every section; Redis and Valkey tracked within a few percent of each other",
+    "summary": "Dragonfly 1.40.1 (64 threads) reached 1.20M ops/s on small-value SET/GET — 6.9x Redis's 174K ops/s, at 0.33 ms p99 vs 2.09 ms. Pipeline depth 30 widened the gap to 8.8x (12.8M vs 1.45M ops/s). Large values closed to 1.9x, likely network-limited. Dragonfly also used 29% less RSS per key. Redis 8.8.2 and Valkey 9.1.1 tracked within 1% of each other on SET/GET workloads and within 8% on pipelining."
+  },
+  "environment": {
+    "machine": "AWS c7g.metal (engine) + c7g.4xlarge (client)",
+    "chip": "AWS Graviton3",
+    "cores": "64 physical (engine)",
+    "memory": "128 GiB (engine), 32 GiB (client)",
+    "os": "Ubuntu 24.04 LTS arm64",
+    "arch": "arm64",
+    "runtime": "Docker (redis:8.8.2, valkey/valkey:9.1.1, dragonflydb/dragonfly:v1.40.1); memtier_benchmark 2.5.1; RESP2, no TLS"
+  },
+  "protocol": {
+    "warmups": 2,
+    "runs": 10,
+    "processModel": "Container per engine, network_mode host; Dragonfly 64 proactor threads on 64 physical cores, Redis and Valkey single-threaded I/O (default io-threads 1); 16 GiB maxmemory for all three",
+    "cacheState": "Preloaded keyspace, 100% hit ratio on GET workloads; working sets sized below 50% of maxmemory; eviction flags set for parity of intent, never triggered",
+    "output": "memtier_benchmark 2.5.1: ops/s, p50/p99/p99.9 latency, client CPU per 10 s pass; memory via INFO MEMORY and cgroup RSS delta",
+    "clientSizing": "memtier: 14 threads × 14 clients = 196 connections"
+  },
+  "candidates": [],
+  "sections": [
+    {
+      "id": "small-value-throughput",
+      "title": "Small value throughput",
+      "deck": "SET/GET mix (1:10 ratio) with 100-byte values, pipeline depth 1. RESP2, no TLS.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "dragonfly",
+        "headline": "Dragonfly 1.20M ops/s (p99 0.33 ms); Redis 174K (2.09 ms); Valkey 173K (2.10 ms)",
+        "summary": "SET/GET mix at pipeline depth 1, 100-byte values. Dragonfly delivered 6.9x the throughput at 6.3x lower tail latency. Redis and Valkey were within 0.5% of each other. Client CPU hit 75% on Dragonfly, meaning these numbers are a floor."
+      },
+      "candidates": [
+        {
+          "id": "redis",
+          "name": "Redis",
+          "version": "8.8.2",
+          "logo": "/logos/redis.svg",
+          "color": "#DC382D",
+          "homepage": "https://redis.io",
+          "statistics": {
+            "medianMs": 2.087,
+            "meanMs": 2.082,
+            "minMs": 2.063,
+            "maxMs": 2.095
+          },
+          "samplesMs": [
+            2.095,
+            2.079,
+            2.095,
+            2.079,
+            2.095,
+            2.063,
+            2.063,
+            2.063,
+            2.095,
+            2.095
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 174330.22499999998,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        },
+        {
+          "id": "valkey",
+          "name": "Valkey",
+          "version": "9.1.1",
+          "color": "#5D6DBF",
+          "homepage": "https://valkey.io",
+          "statistics": {
+            "medianMs": 2.095,
+            "meanMs": 2.095,
+            "minMs": 2.079,
+            "maxMs": 2.127
+          },
+          "samplesMs": [
+            2.095,
+            2.079,
+            2.127,
+            2.095,
+            2.079,
+            2.079,
+            2.095,
+            2.095,
+            2.111,
+            2.095
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 173395.015,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        },
+        {
+          "id": "dragonfly",
+          "name": "Dragonfly",
+          "version": "df-v1.40.1",
+          "color": "#00C7B7",
+          "homepage": "https://www.dragonflydb.io",
+          "statistics": {
+            "medianMs": 0.331,
+            "meanMs": 0.327,
+            "minMs": 0.303,
+            "maxMs": 0.351
+          },
+          "samplesMs": [
+            0.303,
+            0.335,
+            0.335,
+            0.319,
+            0.327,
+            0.343,
+            0.335,
+            0.311,
+            0.351,
+            0.311
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 1196729.845,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "large-value-throughput",
+      "title": "Large value throughput",
+      "deck": "SET/GET mix (1:10 ratio) with 10 KB values, pipeline depth 1. RESP2, no TLS.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "dragonfly",
+        "headline": "Dragonfly 199K ops/s (p99 1.40 ms); Redis 105K (3.52 ms); Valkey 104K (3.55 ms)",
+        "summary": "SET/GET mix at pipeline depth 1, 10 KB values. Dragonfly led 1.9x on throughput and 2.5x on tail latency. At ~2 GB/s the client instance's network was near saturation — the gap may widen with more bandwidth. Redis and Valkey were within 1%."
+      },
+      "candidates": [
+        {
+          "id": "redis",
+          "name": "Redis",
+          "version": "8.8.2",
+          "logo": "/logos/redis.svg",
+          "color": "#DC382D",
+          "homepage": "https://redis.io",
+          "statistics": {
+            "medianMs": 3.519,
+            "meanMs": 3.513,
+            "minMs": 3.503,
+            "maxMs": 3.519
+          },
+          "samplesMs": [
+            3.503,
+            3.503,
+            3.503,
+            3.503,
+            3.519,
+            3.519,
+            3.519,
+            3.519,
+            3.519,
+            3.519
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 104750.465,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        },
+        {
+          "id": "valkey",
+          "name": "Valkey",
+          "version": "9.1.1",
+          "color": "#5D6DBF",
+          "homepage": "https://valkey.io",
+          "statistics": {
+            "medianMs": 3.551,
+            "meanMs": 3.553,
+            "minMs": 3.551,
+            "maxMs": 3.567
+          },
+          "samplesMs": [
+            3.551,
+            3.551,
+            3.551,
+            3.551,
+            3.551,
+            3.551,
+            3.567,
+            3.551,
+            3.551,
+            3.551
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 103657.375,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        },
+        {
+          "id": "dragonfly",
+          "name": "Dragonfly",
+          "version": "df-v1.40.1",
+          "color": "#00C7B7",
+          "homepage": "https://www.dragonflydb.io",
+          "statistics": {
+            "medianMs": 1.395,
+            "meanMs": 1.438,
+            "minMs": 1.279,
+            "maxMs": 1.799
+          },
+          "samplesMs": [
+            1.279,
+            1.399,
+            1.615,
+            1.799,
+            1.367,
+            1.383,
+            1.455,
+            1.407,
+            1.287,
+            1.391
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 198604.74,
+              "unit": "ops/s",
+              "label": "Throughput"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pipeline-effect",
+      "title": "Pipeline effect",
+      "deck": "SET/GET mix (1:10 ratio) with 100-byte values, comparing pipeline depth 1 vs 30. Candidate statistic: pipeline-30 throughput.",
+      "unit": "ops/s",
+      "lowerIsBetter": false,
+      "verdict": {
+        "winnerId": "dragonfly",
+        "headline": "Dragonfly 12.8M ops/s at pipeline 30; Redis 1.45M; Valkey 1.34M",
+        "summary": "Pipeline depth 30 amplified the multi-threaded advantage. Dragonfly delivered 8.8x Redis's throughput and 9.5x Valkey's. Client CPU hit 79% on Dragonfly. Redis held an 8% edge over Valkey in this workload."
+      },
+      "candidates": [
+        {
+          "id": "redis",
+          "name": "Redis",
+          "version": "8.8.2",
+          "logo": "/logos/redis.svg",
+          "color": "#DC382D",
+          "homepage": "https://redis.io",
+          "statistics": {
+            "medianMs": 1451611.165,
+            "meanMs": 1454560.323,
+            "minMs": 1446173.53,
+            "maxMs": 1463588.98
+          },
+          "samplesMs": [
+            1463588.98,
+            1462398.85,
+            1463561.25,
+            1462529.8,
+            1447113.45,
+            1449845.24,
+            1452698.83,
+            1447169.8,
+            1450523.5,
+            1446173.53
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 1451611.165,
+              "unit": "ops/s",
+              "label": "Throughput"
+            },
+            "kbPerSec": {
+              "value": 200367.03999999998,
+              "unit": "KB/s",
+              "label": "Bandwidth"
+            },
+            "hitRatio": {
+              "value": 100,
+              "unit": "%",
+              "label": "Hit ratio"
+            },
+            "clientCpu": {
+              "value": 10.4,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        },
+        {
+          "id": "valkey",
+          "name": "Valkey",
+          "version": "9.1.1",
+          "color": "#5D6DBF",
+          "homepage": "https://valkey.io",
+          "statistics": {
+            "medianMs": 1344832.645,
+            "meanMs": 1344402.873,
+            "minMs": 1342778.59,
+            "maxMs": 1345403.54
+          },
+          "samplesMs": [
+            1345403.54,
+            1345050.54,
+            1345070.69,
+            1345216.15,
+            1344941.58,
+            1343229.05,
+            1344251.06,
+            1343363.82,
+            1344723.71,
+            1342778.59
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 1344832.645,
+              "unit": "ops/s",
+              "label": "Throughput"
+            },
+            "kbPerSec": {
+              "value": 185628.34,
+              "unit": "KB/s",
+              "label": "Bandwidth"
+            },
+            "hitRatio": {
+              "value": 100,
+              "unit": "%",
+              "label": "Hit ratio"
+            },
+            "clientCpu": {
+              "value": 9.3,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        },
+        {
+          "id": "dragonfly",
+          "name": "Dragonfly",
+          "version": "df-v1.40.1",
+          "color": "#00C7B7",
+          "homepage": "https://www.dragonflydb.io",
+          "statistics": {
+            "medianMs": 12833173.64,
+            "meanMs": 12794200.666,
+            "minMs": 12488832.44,
+            "maxMs": 13015865.41
+          },
+          "samplesMs": [
+            13015865.41,
+            12488832.44,
+            12771976.19,
+            12913963.67,
+            12953588.57,
+            12649404.2,
+            13008891.65,
+            12665380.7,
+            12894371.09,
+            12579732.74
+          ],
+          "metrics": {
+            "throughput": {
+              "value": 12833173.64,
+              "unit": "ops/s",
+              "label": "Throughput"
+            },
+            "kbPerSec": {
+              "value": 1771372.5150000001,
+              "unit": "KB/s",
+              "label": "Bandwidth"
+            },
+            "hitRatio": {
+              "value": 100,
+              "unit": "%",
+              "label": "Hit ratio"
+            },
+            "clientCpu": {
+              "value": 79.4,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "pipeline-1",
+          "title": "Pipeline depth 1",
+          "description": "SET/GET mix at pipeline depth 1 (reuses small-value throughput data)",
+          "unit": "ops/s",
+          "lowerIsBetter": false,
+          "results": [
+            {
+              "candidateId": "redis",
+              "value": 174330.225
+            },
+            {
+              "candidateId": "valkey",
+              "value": 173395.015
+            },
+            {
+              "candidateId": "dragonfly",
+              "value": 1196729.845
+            }
+          ]
+        },
+        {
+          "id": "pipeline-30",
+          "title": "Pipeline depth 30",
+          "description": "SET/GET mix at pipeline depth 30",
+          "unit": "ops/s",
+          "lowerIsBetter": false,
+          "results": [
+            {
+              "candidateId": "redis",
+              "value": 1451611.165
+            },
+            {
+              "candidateId": "valkey",
+              "value": 1344832.645
+            },
+            {
+              "candidateId": "dragonfly",
+              "value": 12833173.64
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory-efficiency",
+      "title": "Memory efficiency",
+      "deck": "Baseline-corrected memory after loading keys with 100-byte values. RSS delta is the primary metric (allocator-neutral).",
+      "unit": "MB",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "dragonfly",
+        "headline": "Dragonfly 112.8 MB RSS delta (118 B/key); Redis 158 MB (166 B/key); Valkey 163 MB (171 B/key)",
+        "summary": "Baseline-corrected RSS after loading 1M keys with 100-byte values. Dragonfly used 29% less memory than Redis and 31% less than Valkey."
+      },
+      "candidates": [
+        {
+          "id": "redis",
+          "name": "Redis",
+          "version": "8.8.2",
+          "logo": "/logos/redis.svg",
+          "color": "#DC382D",
+          "homepage": "https://redis.io",
+          "statistics": {
+            "medianMs": 158,
+            "meanMs": 158,
+            "minMs": 158,
+            "maxMs": 158
+          },
+          "samplesMs": [
+            158
+          ],
+          "metrics": {
+            "usedMemoryDeltaMb": {
+              "value": 157.67,
+              "unit": "MB",
+              "label": "Used memory (delta)"
+            },
+            "rssDeltaMb": {
+              "value": 158,
+              "unit": "MB",
+              "label": "RSS (delta)"
+            },
+            "baselineUsedMb": {
+              "value": 1.39,
+              "unit": "MB",
+              "label": "Baseline used memory"
+            },
+            "baselineRssMb": {
+              "value": 23.52,
+              "unit": "MB",
+              "label": "Baseline RSS"
+            },
+            "keyCount": {
+              "value": 1000000,
+              "unit": "keys",
+              "label": "Key count"
+            },
+            "bytesPerKeyRss": {
+              "value": 165.7,
+              "unit": "B/key",
+              "label": "Memory per key (RSS)"
+            },
+            "bytesPerKeyUsed": {
+              "value": 165.3,
+              "unit": "B/key",
+              "label": "Memory per key (used_memory)"
+            },
+            "clientCpu": {
+              "value": 1.4,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        },
+        {
+          "id": "valkey",
+          "name": "Valkey",
+          "version": "9.1.1",
+          "color": "#5D6DBF",
+          "homepage": "https://valkey.io",
+          "statistics": {
+            "medianMs": 163,
+            "meanMs": 163,
+            "minMs": 163,
+            "maxMs": 163
+          },
+          "samplesMs": [
+            163
+          ],
+          "metrics": {
+            "usedMemoryDeltaMb": {
+              "value": 159.4,
+              "unit": "MB",
+              "label": "Used memory (delta)"
+            },
+            "rssDeltaMb": {
+              "value": 163,
+              "unit": "MB",
+              "label": "RSS (delta)"
+            },
+            "baselineUsedMb": {
+              "value": 0.98,
+              "unit": "MB",
+              "label": "Baseline used memory"
+            },
+            "baselineRssMb": {
+              "value": 12.27,
+              "unit": "MB",
+              "label": "Baseline RSS"
+            },
+            "keyCount": {
+              "value": 1000000,
+              "unit": "keys",
+              "label": "Key count"
+            },
+            "bytesPerKeyRss": {
+              "value": 170.9,
+              "unit": "B/key",
+              "label": "Memory per key (RSS)"
+            },
+            "bytesPerKeyUsed": {
+              "value": 167.1,
+              "unit": "B/key",
+              "label": "Memory per key (used_memory)"
+            },
+            "clientCpu": {
+              "value": 1.4,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        },
+        {
+          "id": "dragonfly",
+          "name": "Dragonfly",
+          "version": "df-v1.40.1",
+          "color": "#00C7B7",
+          "homepage": "https://www.dragonflydb.io",
+          "statistics": {
+            "medianMs": 112.81,
+            "meanMs": 112.81,
+            "minMs": 112.81,
+            "maxMs": 112.81
+          },
+          "samplesMs": [
+            112.81
+          ],
+          "metrics": {
+            "usedMemoryDeltaMb": {
+              "value": 124.31,
+              "unit": "MB",
+              "label": "Used memory (delta)"
+            },
+            "rssDeltaMb": {
+              "value": 112.81,
+              "unit": "MB",
+              "label": "RSS (delta)"
+            },
+            "baselineUsedMb": {
+              "value": 17.25,
+              "unit": "MB",
+              "label": "Baseline used memory"
+            },
+            "baselineRssMb": {
+              "value": 110.43,
+              "unit": "MB",
+              "label": "Baseline RSS"
+            },
+            "keyCount": {
+              "value": 1000000,
+              "unit": "keys",
+              "label": "Key count"
+            },
+            "bytesPerKeyRss": {
+              "value": 118.3,
+              "unit": "B/key",
+              "label": "Memory per key (RSS)"
+            },
+            "bytesPerKeyUsed": {
+              "value": 130.3,
+              "unit": "B/key",
+              "label": "Memory per key (used_memory)"
+            },
+            "clientCpu": {
+              "value": 1.1,
+              "unit": "%",
+              "label": "Client CPU"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Dragonfly's small-value and pipeline cells ran the client at 75–79% CPU — the load generator was near its ceiling, so those Dragonfly numbers are a floor, not a measurement of its limit. Redis and Valkey cells ran the client at 9–16%.",
+    "The 10 KB cell moves ~2 GB/s at Dragonfly's rate, near the client instance's network ceiling — the 1.9x gap there is likely network-bound, not an engine limit.",
+    "Redis and Valkey ran their default single-threaded I/O (io-threads 1); enabling Valkey's/Redis's I/O threads is a different benchmark and is queued.",
+    "Dragonfly ran 64 proactor threads on 64 physical cores; 16 GiB maxmemory for all three; eviction flags set for parity of intent and never triggered (working sets ≤ 50% of maxmemory).",
+    "Persistence off for all three.",
+    "One host each for engine and client, same cluster placement group, RESP2, no TLS; closed-loop latency at 196 connections is measured at each engine's own saturation point.",
+    "KeyDB omitted as effectively unmaintained.",
+    "Memory is baseline-corrected RSS delta after loading 1,000,000 keys with 100-byte values; Dragonfly's per-shard tables scale with thread count, so its fixed cost differs at other thread counts."
+  ],
+  "trademarks": [
+    "Redis is a registered trademark of Redis Ltd.",
+    "Valkey is a trademark of The Linux Foundation.",
+    "Dragonfly is a trademark of DragonflyDB Ltd."
+  ],
+  "runnerUrl": "https://github.com/warefeats/kv-stores"
+}
