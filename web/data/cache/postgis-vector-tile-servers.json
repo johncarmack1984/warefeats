@@ -1,0 +1,2785 @@
+{
+  "id": "vector-tile-servers-2026-09",
+  "slug": "postgis-vector-tile-servers",
+  "category": "Tile servers",
+  "title": "Martin vs Tegola vs BBOX vs pg_tileserv vs TiPg vs ldproxy",
+  "deck": "Six open-source vector tile servers generating Mapbox Vector Tiles on the fly from the same PostGIS database, on a pinned Berlin OpenStreetMap corpus: single-tile latency, throughput at 10 and 100 clients, four-tile viewport bursts, cold start and memory. A re-run of the 2024 Rechsteiner thesis matrix on current releases.",
+  "publishedAt": "2026-09-02",
+  "unit": "ms",
+  "lowerIsBetter": true,
+  "verdict": {
+    "winnerId": "martin",
+    "headline": "Martin led single-tile latency, throughput and cold start; the five servers that encode in PostGIS finished within 2 ms of each other on one tile, and ldproxy's opt-in PGIS_TILES mode cut its gap from 9x to 1.4x",
+    "summary": "On the 2,000-building Prenzlauer Berg tile Martin 1.14.0 averaged 13.6 ms; pg_tileserv, TiPg, BBOX and Tegola followed within 2 ms, ldproxy with PGIS_TILES at 18.9 ms, and stock ldproxy 4.8.1 at 121 ms. Under 100 closed-loop clients Martin held 467 tiles/s at a 234 ms p99, TiPg 456 tiles/s, BBOX 395, Tegola 255, ldproxy (PGIS_TILES) 226, pg_tileserv 169 with 0.15% dropped connections, and stock ldproxy 25 tiles/s at a 5.0 s p99. The Rust and Go servers served their first tile 130 to 150 ms after process start and sat at 40 to 47 MB after load; TiPg took 0.5 s and 241 MB, ldproxy 2.5 to 2.8 s and 0.7 GB (PGIS_TILES) or 3.2 GB (stock). The thesis ranking held at the top and bottom, Martin first and stock ldproxy last; TiPg 1.5.0 with four workers moved from fifth to second on throughput, and Tegola from second to fourth."
+  },
+  "environment": {
+    "machine": "MacBook Pro",
+    "chip": "Apple M2 Max",
+    "cores": "12 CPU cores (8 performance, 4 efficiency)",
+    "memory": "96 GB",
+    "os": "macOS 26.6.2",
+    "arch": "arm64",
+    "runtime": "Docker 29.4.0 (OrbStack); PostGIS 18 / 3.6.1 in its own container (6 CPUs, 12 GB); one tile server container at a time (4 CPUs, 4 GB); oha 1.16.0 on the host"
+  },
+  "protocol": {
+    "warmups": 3,
+    "runs": 20,
+    "processModel": "One server container at a time against a shared PostGIS container; 8 database connections per server; 4 workers where the concept exists; 5 cold starts, 20 single-tile passes of 5 requests per tile, 20 four-tile viewport bursts, 8 passes of 12 s at 10 and at 100 connections",
+    "cacheState": "No server-side tile cache anywhere; PostgreSQL buffer cache warm after warmups; tiles requested without compression",
+    "output": "oha 1.16.0 JSON (latency percentiles, request counts, status codes); Bun fetch for cold start, parity and viewport bursts; docker stats for RSS"
+  },
+  "candidates": [],
+  "sections": [
+    {
+      "id": "single-tile-latency",
+      "title": "Single-tile latency",
+      "deck": "One client, one tile at a time: mean response time for a dense building tile, a road tile, a point tile and a low-zoom boundary tile, each generated from PostGIS on every request.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "martin",
+        "headline": "Martin returned the buildings z14 tile in 13.6 ms on average; ldproxy took 121 ms (8.9x)",
+        "summary": "Sequential requests over a single keep-alive connection, full protocol; per-pass means are the samples."
+      },
+      "candidates": [
+        {
+          "id": "martin",
+          "name": "Martin",
+          "version": "1.14.0",
+          "color": "#2563EB",
+          "homepage": "https://martin.maplibre.org",
+          "statistics": {
+            "medianMs": 13.491,
+            "meanMs": 13.559,
+            "minMs": 12.603,
+            "maxMs": 15.871
+          },
+          "samplesMs": [
+            13.46,
+            15.871,
+            15.063,
+            12.728,
+            13.521,
+            12.603,
+            13.037,
+            12.907,
+            14.198,
+            14.816,
+            13.617,
+            13.774,
+            13.226,
+            13.734,
+            12.634,
+            12.942,
+            13.085,
+            13.545,
+            12.891,
+            13.531
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 13.559,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 25.227,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 95511,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2123,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 7.246,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 19.486,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 114721,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2615,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 7.739,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 22.528,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 140222,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2985,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 8.868,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 20.513,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 30546,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 58,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 15.367,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 65836,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "tegola",
+          "name": "Tegola",
+          "version": "0.21.2",
+          "color": "#16A34A",
+          "homepage": "https://tegola.io",
+          "statistics": {
+            "medianMs": 15.567,
+            "meanMs": 15.642,
+            "minMs": 14.699,
+            "maxMs": 17.027
+          },
+          "samplesMs": [
+            15.732,
+            14.699,
+            15.29,
+            15.835,
+            14.982,
+            16.631,
+            16.371,
+            15.296,
+            15.016,
+            14.842,
+            15.208,
+            15.712,
+            15.139,
+            15.733,
+            15.898,
+            16.494,
+            17.027,
+            15.422,
+            16.256,
+            15.253
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 15.642,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 23.282,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 91826,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2019,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 16.539,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 25.053,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 108525,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2465,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 17.372,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 25.489,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 133904,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2838,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 10.844,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 20.391,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 30275,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 55,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 14.929,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 62823,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "bbox",
+          "name": "BBOX",
+          "version": "0.6.2",
+          "color": "#9333EA",
+          "homepage": "https://www.bbox.earth",
+          "statistics": {
+            "medianMs": 15.161,
+            "meanMs": 15.248,
+            "minMs": 14.171,
+            "maxMs": 18.182
+          },
+          "samplesMs": [
+            18.182,
+            15.432,
+            14.966,
+            15.174,
+            14.309,
+            14.997,
+            15.148,
+            16.046,
+            14.685,
+            15.223,
+            15.584,
+            14.794,
+            14.467,
+            15.744,
+            15.908,
+            14.171,
+            15.099,
+            15.344,
+            15.327,
+            14.357
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 15.248,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 30.356,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 95351,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2123,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 9.571,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 24.813,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 114727,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2615,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 10.164,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 27.157,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 140223,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2985,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 10.279,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 22.906,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 30546,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 58,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 16.868,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 67614,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "pg-tileserv",
+          "name": "pg_tileserv",
+          "version": "20250131",
+          "color": "#0891B2",
+          "homepage": "https://github.com/CrunchyData/pg_tileserv",
+          "statistics": {
+            "medianMs": 13.476,
+            "meanMs": 13.729,
+            "minMs": 12.162,
+            "maxMs": 16.22
+          },
+          "samplesMs": [
+            14.263,
+            12.832,
+            12.871,
+            12.46,
+            12.162,
+            14.841,
+            14.934,
+            13.953,
+            16.22,
+            14.77,
+            12.371,
+            12.616,
+            12.915,
+            13.43,
+            13.522,
+            12.281,
+            15.895,
+            13.535,
+            12.57,
+            16.129
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 13.729,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 26.798,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 114657,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2123,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 12.903,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 28.803,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 138594,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2615,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 13.884,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 29.275,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 167224,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2982,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 9.155,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 18.763,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 31000,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 58,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 17.248,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 75195,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "tipg",
+          "name": "TiPg",
+          "version": "1.5.0",
+          "color": "#EA580C",
+          "homepage": "https://developmentseed.org/tipg/",
+          "statistics": {
+            "medianMs": 13.616,
+            "meanMs": 13.759,
+            "minMs": 13.382,
+            "maxMs": 14.971
+          },
+          "samplesMs": [
+            13.593,
+            13.981,
+            13.575,
+            13.561,
+            13.455,
+            13.57,
+            13.382,
+            13.793,
+            13.461,
+            13.462,
+            13.488,
+            13.612,
+            13.632,
+            13.994,
+            13.746,
+            13.743,
+            13.619,
+            14.092,
+            14.452,
+            14.971
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 13.759,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 20.886,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 101774,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2017,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 9.248,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 23.654,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 121187,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2465,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 8.796,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 25.638,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 148338,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2836,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 10.387,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 23.781,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 30536,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 55,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 17.285,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 66997,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "ldproxy",
+          "name": "ldproxy",
+          "version": "4.8.1",
+          "color": "#DC2626",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 120.536,
+            "meanMs": 120.798,
+            "minMs": 116.002,
+            "maxMs": 132.499
+          },
+          "samplesMs": [
+            124.852,
+            123.203,
+            123.04,
+            120.76,
+            119.216,
+            122.206,
+            132.499,
+            116.205,
+            118.338,
+            120.829,
+            119.597,
+            121.947,
+            116.002,
+            123.488,
+            116.839,
+            118.672,
+            118.105,
+            121.597,
+            118.248,
+            120.312
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 120.798,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 172.889,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 99164,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 1998,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 83.608,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 106.481,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 118972,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2363,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 89.384,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 111.079,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 160090,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2836,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 25.443,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 39.611,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 11456,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 55,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 119.449,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 63464,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        },
+        {
+          "id": "ldproxy-pgis",
+          "name": "ldproxy (PGIS_TILES)",
+          "version": "4.8.1",
+          "color": "#A16207",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 17.74,
+            "meanMs": 18.87,
+            "minMs": 16.596,
+            "maxMs": 30.734
+          },
+          "samplesMs": [
+            21.153,
+            30.734,
+            21.8,
+            18.445,
+            19.903,
+            20.341,
+            18.613,
+            17.829,
+            17.65,
+            17.508,
+            17.061,
+            17.328,
+            17.897,
+            17.359,
+            16.97,
+            16.875,
+            17.039,
+            16.596,
+            17.313,
+            18.977
+          ],
+          "metrics": {
+            "buildings-z14-mean": {
+              "value": 18.87,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency"
+            },
+            "buildings-z14-p99": {
+              "value": 37.563,
+              "unit": "ms",
+              "label": "Buildings z14 p99 latency"
+            },
+            "buildings-z14-bytes": {
+              "value": 91885,
+              "unit": "B",
+              "label": "Buildings z14 tile size"
+            },
+            "buildings-z14-features": {
+              "value": 2017,
+              "unit": "features",
+              "label": "Buildings z14 features in tile"
+            },
+            "roads-z14-mean": {
+              "value": 15.112,
+              "unit": "ms",
+              "label": "Roads z14 mean latency"
+            },
+            "roads-z14-p99": {
+              "value": 33.162,
+              "unit": "ms",
+              "label": "Roads z14 p99 latency"
+            },
+            "roads-z14-bytes": {
+              "value": 108737,
+              "unit": "B",
+              "label": "Roads z14 tile size"
+            },
+            "roads-z14-features": {
+              "value": 2465,
+              "unit": "features",
+              "label": "Roads z14 features in tile"
+            },
+            "pois-z14-mean": {
+              "value": 16.164,
+              "unit": "ms",
+              "label": "Points z14 mean latency"
+            },
+            "pois-z14-p99": {
+              "value": 35.189,
+              "unit": "ms",
+              "label": "Points z14 p99 latency"
+            },
+            "pois-z14-bytes": {
+              "value": 133818,
+              "unit": "B",
+              "label": "Points z14 tile size"
+            },
+            "pois-z14-features": {
+              "value": 2836,
+              "unit": "features",
+              "label": "Points z14 features in tile"
+            },
+            "boundaries-z9-mean": {
+              "value": 9.259,
+              "unit": "ms",
+              "label": "Boundaries z9 mean latency"
+            },
+            "boundaries-z9-p99": {
+              "value": 21.861,
+              "unit": "ms",
+              "label": "Boundaries z9 p99 latency"
+            },
+            "boundaries-z9-bytes": {
+              "value": 31810,
+              "unit": "B",
+              "label": "Boundaries z9 tile size"
+            },
+            "boundaries-z9-features": {
+              "value": 55,
+              "unit": "features",
+              "label": "Boundaries z9 features in tile"
+            },
+            "buildings-z14-gzip-mean": {
+              "value": 19.182,
+              "unit": "ms",
+              "label": "Buildings z14 mean latency, gzip negotiated"
+            },
+            "buildings-z14-gzip-bytes": {
+              "value": 63207,
+              "unit": "B",
+              "label": "Buildings z14 transferred bytes, gzip negotiated"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "mean-buildings-z14",
+          "title": "Buildings z14",
+          "description": "Mean latency over one connection. Dense polygon tile: every building footprint in a 1.5 km Prenzlauer Berg tile (about 2,000 polygons).",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 13.559
+            },
+            {
+              "candidateId": "tegola",
+              "value": 15.642
+            },
+            {
+              "candidateId": "bbox",
+              "value": 15.248
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 13.729
+            },
+            {
+              "candidateId": "tipg",
+              "value": 13.759
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 120.798
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 18.87
+            }
+          ]
+        },
+        {
+          "id": "mean-roads-z14",
+          "title": "Roads z14",
+          "description": "Mean latency over one connection. Line tile: every highway=* way in the same Prenzlauer Berg tile (about 2,500 lines).",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 7.246
+            },
+            {
+              "candidateId": "tegola",
+              "value": 16.539
+            },
+            {
+              "candidateId": "bbox",
+              "value": 9.571
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 12.903
+            },
+            {
+              "candidateId": "tipg",
+              "value": 9.248
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 83.608
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 15.112
+            }
+          ]
+        },
+        {
+          "id": "mean-pois-z14",
+          "title": "Points z14",
+          "description": "Mean latency over one connection. Point tile: amenity, shop and tourism nodes in the same Prenzlauer Berg tile (about 2,800 points).",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 7.739
+            },
+            {
+              "candidateId": "tegola",
+              "value": 17.372
+            },
+            {
+              "candidateId": "bbox",
+              "value": 10.164
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 13.884
+            },
+            {
+              "candidateId": "tipg",
+              "value": 8.796
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 89.384
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 16.164
+            }
+          ]
+        },
+        {
+          "id": "mean-boundaries-z9",
+          "title": "Boundaries z9",
+          "description": "Mean latency over one connection. Low-zoom polygon tile: the 55 administrative boundary polygons covering most of Berlin, city outline included.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 8.868
+            },
+            {
+              "candidateId": "tegola",
+              "value": 10.844
+            },
+            {
+              "candidateId": "bbox",
+              "value": 10.279
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 9.155
+            },
+            {
+              "candidateId": "tipg",
+              "value": 10.387
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 25.443
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 9.259
+            }
+          ]
+        },
+        {
+          "id": "mean-buildings-z14-gzip",
+          "title": "Buildings z14, gzip",
+          "description": "Mean latency over one connection when the client accepts gzip, as browsers do: the buildings z14 tile including whatever compression the server applies.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 15.367
+            },
+            {
+              "candidateId": "tegola",
+              "value": 14.929
+            },
+            {
+              "candidateId": "bbox",
+              "value": 16.868
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 17.248
+            },
+            {
+              "candidateId": "tipg",
+              "value": 17.285
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 119.449
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 19.182
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "concurrency",
+      "title": "Throughput under concurrency",
+      "deck": "Closed-loop load on the buildings z14 tile at 10 and 100 concurrent connections; every request regenerates the tile from PostGIS through an 8-connection pool.",
+      "unit": "req/s",
+      "lowerIsBetter": false,
+      "verdict": {
+        "winnerId": "martin",
+        "headline": "Martin sustained 467 tiles/s at 100 connections; ldproxy managed 25",
+        "summary": "Per-pass successful requests per second at 100 connections are the samples."
+      },
+      "candidates": [
+        {
+          "id": "martin",
+          "name": "Martin",
+          "version": "1.14.0",
+          "color": "#2563EB",
+          "homepage": "https://martin.maplibre.org",
+          "statistics": {
+            "medianMs": 490.415,
+            "meanMs": 467.428,
+            "minMs": 387.42,
+            "maxMs": 499.17
+          },
+          "samplesMs": [
+            489.58,
+            488.33,
+            491.25,
+            496.67,
+            499.17,
+            497.42,
+            387.42,
+            389.58
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 485.17,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 16.508,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 44.174,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 5706,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 467.43,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 201.449,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 233.628,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 4649,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 39.8,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "tegola",
+          "name": "Tegola",
+          "version": "0.21.2",
+          "color": "#16A34A",
+          "homepage": "https://tegola.io",
+          "statistics": {
+            "medianMs": 257.835,
+            "meanMs": 254.625,
+            "minMs": 233.33,
+            "maxMs": 273
+          },
+          "samplesMs": [
+            256.67,
+            236.33,
+            244.75,
+            233.33,
+            262.92,
+            271,
+            259,
+            273
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 264.68,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 31.4,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 70.059,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 3013,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 254.63,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 382.694,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 1137.639,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 2800,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 46.5,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "bbox",
+          "name": "BBOX",
+          "version": "0.6.2",
+          "color": "#9333EA",
+          "homepage": "https://www.bbox.earth",
+          "statistics": {
+            "medianMs": 425.125,
+            "meanMs": 394.574,
+            "minMs": 264.75,
+            "maxMs": 445.42
+          },
+          "samplesMs": [
+            424.83,
+            445.42,
+            384.75,
+            353.17,
+            264.75,
+            428.67,
+            425.42,
+            429.58
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 494.27,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 19.684,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 30.762,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 5792,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 394.57,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 233.27,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 289.348,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 3177,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 42.2,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "pg-tileserv",
+          "name": "pg_tileserv",
+          "version": "20250131",
+          "color": "#0891B2",
+          "homepage": "https://github.com/CrunchyData/pg_tileserv",
+          "statistics": {
+            "medianMs": 175.96,
+            "meanMs": 169.323,
+            "minMs": 107.17,
+            "maxMs": 209.5
+          },
+          "samplesMs": [
+            208.33,
+            113.83,
+            164.42,
+            209.5,
+            161.33,
+            107.17,
+            187.5,
+            202.5
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 220.71,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 32.696,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 83.716,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 2207,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 169.32,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 499.98,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 1144.598,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0.15,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 1286,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 41,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "tipg",
+          "name": "TiPg",
+          "version": "1.5.0",
+          "color": "#EA580C",
+          "homepage": "https://developmentseed.org/tipg/",
+          "statistics": {
+            "medianMs": 466.625,
+            "meanMs": 456.219,
+            "minMs": 410,
+            "maxMs": 484.67
+          },
+          "samplesMs": [
+            480.58,
+            434.33,
+            410,
+            423,
+            484.67,
+            462.83,
+            483.92,
+            470.42
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 332.26,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 25.064,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 47.394,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 1936,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 456.22,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 169.248,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 486.246,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 4920,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 240.5,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "ldproxy",
+          "name": "ldproxy",
+          "version": "4.8.1",
+          "color": "#DC2626",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 26.08,
+            "meanMs": 24.614,
+            "minMs": 12.17,
+            "maxMs": 30.5
+          },
+          "samplesMs": [
+            30.5,
+            30,
+            28,
+            27.33,
+            20.08,
+            24,
+            24.83,
+            12.17
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 33.03,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 229.591,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 1067.032,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 278,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 24.61,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 2795.471,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 4962.77,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 146,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 3225.6,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "ldproxy-pgis",
+          "name": "ldproxy (PGIS_TILES)",
+          "version": "4.8.1",
+          "color": "#A16207",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 243.29,
+            "meanMs": 226.02,
+            "minMs": 182,
+            "maxMs": 249.67
+          },
+          "samplesMs": [
+            249.67,
+            240.33,
+            246.25,
+            248.83,
+            247.83,
+            192.58,
+            182,
+            200.67
+          ],
+          "metrics": {
+            "c10-rps": {
+              "value": 248.61,
+              "unit": "req/s",
+              "label": "Throughput at 10 connections"
+            },
+            "c10-p50": {
+              "value": 29.251,
+              "unit": "ms",
+              "label": "p50 latency at 10 connections"
+            },
+            "c10-p99": {
+              "value": 79.305,
+              "unit": "ms",
+              "label": "p99 latency at 10 connections"
+            },
+            "c10-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 10 connections"
+            },
+            "c10-min-completed": {
+              "value": 2590,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 10 connections"
+            },
+            "c100-rps": {
+              "value": 226.02,
+              "unit": "req/s",
+              "label": "Throughput at 100 connections"
+            },
+            "c100-p50": {
+              "value": 401.121,
+              "unit": "ms",
+              "label": "p50 latency at 100 connections"
+            },
+            "c100-p99": {
+              "value": 1140.164,
+              "unit": "ms",
+              "label": "p99 latency at 100 connections"
+            },
+            "c100-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed requests at 100 connections"
+            },
+            "c100-min-completed": {
+              "value": 2184,
+              "unit": "requests",
+              "label": "Fewest requests completed in one pass at 100 connections"
+            },
+            "rss-after-load": {
+              "value": 695.7,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "rps-c10",
+          "title": "Throughput, 10 connections",
+          "description": "Successful buildings z14 tiles per second with 10 closed-loop clients.",
+          "unit": "req/s",
+          "lowerIsBetter": false,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 485.17
+            },
+            {
+              "candidateId": "tegola",
+              "value": 264.68
+            },
+            {
+              "candidateId": "bbox",
+              "value": 494.27
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 220.71
+            },
+            {
+              "candidateId": "tipg",
+              "value": 332.26
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 33.03
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 248.61
+            }
+          ]
+        },
+        {
+          "id": "rps-c100",
+          "title": "Throughput, 100 connections",
+          "description": "Successful buildings z14 tiles per second with 100 closed-loop clients.",
+          "unit": "req/s",
+          "lowerIsBetter": false,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 467.43
+            },
+            {
+              "candidateId": "tegola",
+              "value": 254.63
+            },
+            {
+              "candidateId": "bbox",
+              "value": 394.57
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 169.32
+            },
+            {
+              "candidateId": "tipg",
+              "value": 456.22
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 24.61
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 226.02
+            }
+          ]
+        },
+        {
+          "id": "p99-c10",
+          "title": "p99 latency, 10 connections",
+          "description": "Median across passes of each pass's p99 response time at 10 connections. A server that completed no request in a pass is charged the whole 12 s pass.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 44.174
+            },
+            {
+              "candidateId": "tegola",
+              "value": 70.059
+            },
+            {
+              "candidateId": "bbox",
+              "value": 30.762
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 83.716
+            },
+            {
+              "candidateId": "tipg",
+              "value": 47.394
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 1067.032
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 79.305
+            }
+          ]
+        },
+        {
+          "id": "p99-c100",
+          "title": "p99 latency, 100 connections",
+          "description": "Median across passes of each pass's p99 response time at 100 connections. A server that completed no request in a pass is charged the whole 12 s pass.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 233.628
+            },
+            {
+              "candidateId": "tegola",
+              "value": 1137.639
+            },
+            {
+              "candidateId": "bbox",
+              "value": 289.348
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 1144.598
+            },
+            {
+              "candidateId": "tipg",
+              "value": 486.246
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 4962.77
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 1140.164
+            }
+          ]
+        },
+        {
+          "id": "errors-c100",
+          "title": "Failed requests, 100 connections",
+          "description": "Non-2xx responses plus connection errors and 60 s timeouts as a share of all requests at 100 connections.",
+          "unit": "%",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 0
+            },
+            {
+              "candidateId": "tegola",
+              "value": 0
+            },
+            {
+              "candidateId": "bbox",
+              "value": 0
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 0.15
+            },
+            {
+              "candidateId": "tipg",
+              "value": 0
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 0
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "viewport-burst",
+      "title": "Viewport burst",
+      "deck": "Four adjacent z15 building tiles requested at once, the way a map view loads; wall time until the last one lands.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "pg-tileserv",
+        "headline": "pg_tileserv filled the four-tile viewport in 5.3 ms; ldproxy needed 51.7 ms",
+        "summary": "Wall time per viewport load is the sample."
+      },
+      "candidates": [
+        {
+          "id": "martin",
+          "name": "Martin",
+          "version": "1.14.0",
+          "color": "#2563EB",
+          "homepage": "https://martin.maplibre.org",
+          "statistics": {
+            "medianMs": 4.655,
+            "meanMs": 5.518,
+            "minMs": 4.336,
+            "maxMs": 8.108
+          },
+          "samplesMs": [
+            7.058,
+            4.679,
+            6.516,
+            6.337,
+            4.513,
+            4.347,
+            4.443,
+            4.505,
+            4.631,
+            4.43,
+            4.441,
+            4.986,
+            7.929,
+            8.108,
+            4.336,
+            6.429,
+            6.162,
+            4.392,
+            4.375,
+            7.746
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 5.518,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 8.108,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 5.428,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "tegola",
+          "name": "Tegola",
+          "version": "0.21.2",
+          "color": "#16A34A",
+          "homepage": "https://tegola.io",
+          "statistics": {
+            "medianMs": 6.93,
+            "meanMs": 7.463,
+            "minMs": 5.05,
+            "maxMs": 12.216
+          },
+          "samplesMs": [
+            8.388,
+            7.782,
+            5.261,
+            8.016,
+            6.923,
+            6.937,
+            6.597,
+            5.05,
+            12.164,
+            5.595,
+            8.727,
+            8.977,
+            5.321,
+            9.691,
+            12.216,
+            5.5,
+            9.2,
+            5.072,
+            6.339,
+            5.507
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 7.463,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 12.216,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 7.379,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "bbox",
+          "name": "BBOX",
+          "version": "0.6.2",
+          "color": "#9333EA",
+          "homepage": "https://www.bbox.earth",
+          "statistics": {
+            "medianMs": 6.363,
+            "meanMs": 6.643,
+            "minMs": 4.646,
+            "maxMs": 9.669
+          },
+          "samplesMs": [
+            6.506,
+            9.414,
+            8.754,
+            5.709,
+            5.228,
+            5.576,
+            5.521,
+            5.084,
+            7.868,
+            7.934,
+            6.465,
+            4.646,
+            7.154,
+            7.145,
+            9.669,
+            6.088,
+            5.52,
+            6.878,
+            5.44,
+            6.261
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 6.643,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 9.669,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 6.599,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "pg-tileserv",
+          "name": "pg_tileserv",
+          "version": "20250131",
+          "color": "#0891B2",
+          "homepage": "https://github.com/CrunchyData/pg_tileserv",
+          "statistics": {
+            "medianMs": 4.844,
+            "meanMs": 5.35,
+            "minMs": 4.559,
+            "maxMs": 7.491
+          },
+          "samplesMs": [
+            5.109,
+            4.737,
+            4.922,
+            4.652,
+            5.19,
+            4.559,
+            7.074,
+            6.922,
+            4.711,
+            6.854,
+            4.761,
+            6.358,
+            5.3,
+            4.616,
+            4.616,
+            4.765,
+            4.63,
+            7.491,
+            4.636,
+            5.103
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 5.35,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 7.491,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 5.292,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "tipg",
+          "name": "TiPg",
+          "version": "1.5.0",
+          "color": "#EA580C",
+          "homepage": "https://developmentseed.org/tipg/",
+          "statistics": {
+            "medianMs": 9.593,
+            "meanMs": 10.153,
+            "minMs": 8.454,
+            "maxMs": 13.609
+          },
+          "samplesMs": [
+            13.609,
+            10.091,
+            9.461,
+            10.536,
+            13.083,
+            8.845,
+            9.62,
+            9.451,
+            9.61,
+            9.649,
+            9.577,
+            9.07,
+            9.418,
+            9.435,
+            8.471,
+            13.265,
+            11.695,
+            8.454,
+            10.749,
+            8.971
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 10.153,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 13.609,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 10.081,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "ldproxy",
+          "name": "ldproxy",
+          "version": "4.8.1",
+          "color": "#DC2626",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 45.793,
+            "meanMs": 51.747,
+            "minMs": 34.991,
+            "maxMs": 84.775
+          },
+          "samplesMs": [
+            36.502,
+            41.059,
+            46.263,
+            45.323,
+            44.473,
+            39.036,
+            39.11,
+            46.373,
+            84.775,
+            75.031,
+            74.951,
+            71.474,
+            48.897,
+            65.256,
+            70.752,
+            54.332,
+            41.5,
+            35.08,
+            39.755,
+            34.991
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 51.747,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 84.775,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 51.461,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        },
+        {
+          "id": "ldproxy-pgis",
+          "name": "ldproxy (PGIS_TILES)",
+          "version": "4.8.1",
+          "color": "#A16207",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 9.237,
+            "meanMs": 10.536,
+            "minMs": 7.064,
+            "maxMs": 20.684
+          },
+          "samplesMs": [
+            18,
+            11.008,
+            10.485,
+            16.525,
+            8.254,
+            8.159,
+            9.314,
+            9.16,
+            11.167,
+            11.431,
+            11.187,
+            8.995,
+            7.114,
+            8.869,
+            7.064,
+            7.427,
+            20.684,
+            7.526,
+            7.801,
+            10.552
+          ],
+          "metrics": {
+            "burst-mean": {
+              "value": 10.536,
+              "unit": "ms",
+              "label": "Mean time to all four tiles"
+            },
+            "burst-max": {
+              "value": 20.684,
+              "unit": "ms",
+              "label": "Slowest viewport"
+            },
+            "slowest-tile-mean": {
+              "value": 10.442,
+              "unit": "ms",
+              "label": "Mean of the slowest tile per viewport"
+            },
+            "burst-errors": {
+              "value": 0,
+              "unit": "%",
+              "label": "Failed tile requests"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "burst-mean",
+          "title": "Viewport, mean",
+          "description": "Mean wall time until all four z15 building tiles have arrived, requested in parallel.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 5.518
+            },
+            {
+              "candidateId": "tegola",
+              "value": 7.463
+            },
+            {
+              "candidateId": "bbox",
+              "value": 6.643
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 5.35
+            },
+            {
+              "candidateId": "tipg",
+              "value": 10.153
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 51.747
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 10.536
+            }
+          ]
+        },
+        {
+          "id": "burst-max",
+          "title": "Viewport, slowest",
+          "description": "The slowest of the measured viewport loads.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 8.108
+            },
+            {
+              "candidateId": "tegola",
+              "value": 12.216
+            },
+            {
+              "candidateId": "bbox",
+              "value": 9.669
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 7.491
+            },
+            {
+              "candidateId": "tipg",
+              "value": 13.609
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 84.775
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 20.684
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cold-start",
+      "title": "Cold start and footprint",
+      "deck": "Time from process start to the first served tile, and resident memory idle and after load.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "martin",
+        "headline": "Martin served its first tile 130 ms after process start; ldproxy took 2.84 s",
+        "summary": "Each sample is one container start measured from Docker's StartedAt to the first 200 response."
+      },
+      "candidates": [
+        {
+          "id": "martin",
+          "name": "Martin",
+          "version": "1.14.0",
+          "color": "#2563EB",
+          "homepage": "https://martin.maplibre.org",
+          "statistics": {
+            "medianMs": 130,
+            "meanMs": 133,
+            "minMs": 127,
+            "maxMs": 143
+          },
+          "samplesMs": [
+            143,
+            136,
+            127,
+            129,
+            130
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 130,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 9.5,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 39.8,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "tegola",
+          "name": "Tegola",
+          "version": "0.21.2",
+          "color": "#16A34A",
+          "homepage": "https://tegola.io",
+          "statistics": {
+            "medianMs": 141,
+            "meanMs": 142.2,
+            "minMs": 139,
+            "maxMs": 145
+          },
+          "samplesMs": [
+            145,
+            145,
+            141,
+            139,
+            141
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 141,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 8.1,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 46.5,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "bbox",
+          "name": "BBOX",
+          "version": "0.6.2",
+          "color": "#9333EA",
+          "homepage": "https://www.bbox.earth",
+          "statistics": {
+            "medianMs": 145,
+            "meanMs": 146.8,
+            "minMs": 134,
+            "maxMs": 166
+          },
+          "samplesMs": [
+            145,
+            166,
+            145,
+            144,
+            134
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 145,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 10.9,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 42.2,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "pg-tileserv",
+          "name": "pg_tileserv",
+          "version": "20250131",
+          "color": "#0891B2",
+          "homepage": "https://github.com/CrunchyData/pg_tileserv",
+          "statistics": {
+            "medianMs": 149,
+            "meanMs": 148.8,
+            "minMs": 147,
+            "maxMs": 152
+          },
+          "samplesMs": [
+            152,
+            149,
+            147,
+            149,
+            147
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 149,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 4.4,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 41,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "tipg",
+          "name": "TiPg",
+          "version": "1.5.0",
+          "color": "#EA580C",
+          "homepage": "https://developmentseed.org/tipg/",
+          "statistics": {
+            "medianMs": 498,
+            "meanMs": 508,
+            "minMs": 478,
+            "maxMs": 564
+          },
+          "samplesMs": [
+            564,
+            496,
+            498,
+            478,
+            504
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 498,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 213.6,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 240.5,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "ldproxy",
+          "name": "ldproxy",
+          "version": "4.8.1",
+          "color": "#DC2626",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 2838,
+            "meanMs": 3708.6,
+            "minMs": 2780,
+            "maxMs": 5739
+          },
+          "samplesMs": [
+            2838,
+            2780,
+            2823,
+            5739,
+            4363
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 2838,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 479.4,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 3225.6,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        },
+        {
+          "id": "ldproxy-pgis",
+          "name": "ldproxy (PGIS_TILES)",
+          "version": "4.8.1",
+          "color": "#A16207",
+          "homepage": "https://www.ldproxy.net",
+          "statistics": {
+            "medianMs": 2628,
+            "meanMs": 3685.8,
+            "minMs": 2421,
+            "maxMs": 5607
+          },
+          "samplesMs": [
+            5607,
+            2628,
+            2421,
+            2463,
+            5310
+          ],
+          "metrics": {
+            "first-tile-median": {
+              "value": 2628,
+              "unit": "ms",
+              "label": "Median time to first tile"
+            },
+            "idle-rss": {
+              "value": 447.5,
+              "unit": "MB",
+              "label": "Idle RSS after start"
+            },
+            "rss-after-load": {
+              "value": 695.7,
+              "unit": "MB",
+              "label": "RSS after the load passes"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "first-tile",
+          "title": "Time to first tile",
+          "description": "Median time from container process start until the building tile is served, including schema discovery.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 130
+            },
+            {
+              "candidateId": "tegola",
+              "value": 141
+            },
+            {
+              "candidateId": "bbox",
+              "value": 145
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 149
+            },
+            {
+              "candidateId": "tipg",
+              "value": 498
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 2838
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 2628
+            }
+          ]
+        },
+        {
+          "id": "idle-rss",
+          "title": "Idle memory",
+          "description": "Container RSS five seconds after the first tile, before any load.",
+          "unit": "MB",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 9.5
+            },
+            {
+              "candidateId": "tegola",
+              "value": 8.1
+            },
+            {
+              "candidateId": "bbox",
+              "value": 10.9
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 4.4
+            },
+            {
+              "candidateId": "tipg",
+              "value": 213.6
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 479.4
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 447.5
+            }
+          ]
+        },
+        {
+          "id": "loaded-rss",
+          "title": "Memory after load",
+          "description": "Container RSS right after the concurrency passes.",
+          "unit": "MB",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "martin",
+              "value": 39.8
+            },
+            {
+              "candidateId": "tegola",
+              "value": 46.5
+            },
+            {
+              "candidateId": "bbox",
+              "value": 42.2
+            },
+            {
+              "candidateId": "pg-tileserv",
+              "value": 41
+            },
+            {
+              "candidateId": "tipg",
+              "value": 240.5
+            },
+            {
+              "candidateId": "ldproxy",
+              "value": 3225.6
+            },
+            {
+              "candidateId": "ldproxy-pgis",
+              "value": 695.7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "One laptop: PostGIS (6 CPUs, 12 GB), the server under test (4 CPUs, 4 GB) and the load generator all shared a 12-core M2 Max under OrbStack. Numbers are relative to each other, not absolute capacity.",
+    "Every server ran an 8-connection database pool because BBOX 0.6.2 hard-codes 8. The 100-client test therefore measures how each server queues 100 clients onto 8 database connections; untuned Tegola (default pool 100) or Martin (default 20) may behave differently.",
+    "Tiles were requested without Accept-Encoding, as the thesis's JMeter plans did. Tegola gzips every tile internally and decompresses it again for such clients, so its uncompressed path does more work than its gzip path (5% at one client); browser clients, which accept gzip, would narrow Tegola's 100-client gap.",
+    "The servers do not select exactly the same features: Martin, BBOX and pg_tileserv query the buffered tile envelope (2,123 buildings, 58 boundary polygons), Tegola, TiPg and ldproxy the unbuffered one (2,017 to 2,019 buildings, 55 polygons), and stock ldproxy additionally drops features under half a pixel and simplifies geometry (1,998 buildings; an 11 KB boundary tile against 30 KB). Stock ldproxy did the least encoding work and was still slowest.",
+    "pg_tileserv's tiles are about 20% larger than Martin's for the same feature set, which its single-connection times absorb but its throughput pays for.",
+    "ldproxy appears twice on purpose. Stock ldproxy encodes tiles in Java from a feature query; PGIS_TILES (opt-in since 4.4) moves encoding into PostGIS and only supports simple mappings without joins, arrays or transformations. Its JVM was allowed 75% of the 4 GB container, above the 25% default.",
+    "pg_tileserv's default 10-second database timeout was raised to 60 s so it could not fail requests the other servers would have served; it still closed 25 of 16,280 connections at 100 clients.",
+    "TiPg ran four gunicorn workers to match the four CPUs; its image defaults to one. One-worker TiPg is a different benchmark.",
+    "Cold start is process start to first tile, so it includes schema discovery on four tables; ldproxy's also includes auto-generating the API configuration from the provider. Two of ldproxy's five starts took twice as long as the other three.",
+    "Memory is Docker's reported usage for the container (cgroup usage minus inactive file cache), sampled once idle and once after the 100-client passes.",
+    "Load repeatedly requested one z14 tile with the PostgreSQL buffer cache warm, so this is server and encoder overhead over a hot database, not cache-miss or cold-disk behaviour, and no CDN or tile cache sits in front.",
+    "Single run on one day. Martin's throughput dipped 20% in its last two 100-client passes; every sample is in the run file.",
+    "Martin's tile bytes vary by about 1% between identical requests because PostgreSQL does not fix feature order; the parity check compares feature counts."
+  ],
+  "trademarks": [
+    "Martin is a project of the MapLibre organization.",
+    "Tegola is a project of the Go Spatial organization.",
+    "BBOX is developed by Sourcepole.",
+    "pg_tileserv is developed by Crunchy Data.",
+    "TiPg is developed by Development Seed.",
+    "ldproxy is developed by interactive instruments GmbH.",
+    "Map data: OpenStreetMap contributors, ODbL, via the Geofabrik Berlin extract of 2026-01-01."
+  ],
+  "runnerUrl": "https://github.com/warefeats/vector-tile-servers"
+}

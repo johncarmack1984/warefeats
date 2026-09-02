@@ -20,6 +20,11 @@
       "slug": "redis-vs-valkey-vs-dragonfly-kv",
       "repo": "warefeats/kv-stores",
       "ref": "24e766c0baf20cff81d8a435070f08ea5b897259"
+    },
+    {
+      "slug": "postgis-vector-tile-servers",
+      "repo": "warefeats/vector-tile-servers",
+      "ref": "5667d239fe691d2885f631bc78c178e98189d7da"
     }
   ]
 }
