@@ -17,6 +17,6 @@
   },
   "postgis-vector-tile-servers": {
     "repo": "warefeats/vector-tile-servers",
-    "ref": "5667d239fe691d2885f631bc78c178e98189d7da"
+    "ref": "5952cba88aa541cde18db7b37d6c798a2010d0df"
   }
 }

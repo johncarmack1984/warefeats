@@ -10,7 +10,7 @@ import { ReportBlock } from "../components/ReportBlock";
 import { REPO_URL } from "../components/SiteHeader";
 import { BoxPlot } from "../components/BoxPlot";
 import { CatalogSkeleton, ErrorState } from "../components/States";
-import { benchmarkTests, formatDate } from "../metrics";
+import { benchmarkTests, formatDate, formatValue, scorecard } from "../metrics";
 import type { Benchmark } from "../types";
 import { NotFound } from "./NotFound";
 
@@ -44,6 +44,45 @@ function useActiveRun(benchmark: Benchmark) {
     sections: activeRun?.sections ?? benchmark.sections,
     candidates: activeRun?.candidates ?? benchmark.candidates,
   };
+}
+
+/** The verdict's numbers as a table: one row per candidate, one column per section, medians. */
+function Scorecard({ sections }: { sections: Benchmark["sections"] }) {
+  if (!sections?.length) return null;
+  const card = scorecard(sections);
+  return (
+    <div className="table-scroll scorecard">
+      <table>
+        <caption>Median of each section's samples per candidate. The section winner is marked in red.</caption>
+        <thead>
+          <tr>
+            <th scope="col">Candidate</th>
+            {card.columns.map((column) => (
+              <th scope="col" key={column.id}>
+                {column.title} <span className="unit">({column.unit}, {column.lowerIsBetter ? "lower is better" : "higher is better"})</span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {card.rows.map((row) => (
+            <tr key={row.candidateId}>
+              <th scope="row">{row.name}</th>
+              {row.cells.map((cell, index) => {
+                const column = card.columns[index]!;
+                const winner = column.winnerId === row.candidateId;
+                return (
+                  <td className={`num${winner ? " scorecard-winner" : ""}`} key={column.id}>
+                    {cell === null ? <span aria-label="not run">–</span> : formatValue(cell, column.unit)}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
 function BenchmarkContent({ benchmark }: { benchmark: Benchmark }) {
@@ -84,7 +123,9 @@ function BenchmarkContent({ benchmark }: { benchmark: Benchmark }) {
 
         <section className="learned" aria-labelledby="learned-title">
           <h2 id="learned-title">What did we learn?</h2>
-          <p className="learned-lead">{benchmark.verdict.headline}. {benchmark.verdict.summary}</p>
+          <p className="learned-lead">{benchmark.verdict.headline}.</p>
+          <Scorecard sections={displaySections} />
+          <p className="learned-summary">{benchmark.verdict.summary}</p>
           <h3>What this does not prove</h3>
           <ul>
             {benchmark.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
