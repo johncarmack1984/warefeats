@@ -1,4 +1,4 @@
-import type { Benchmark, BenchmarkTest, Candidate } from "./types";
+import type { Benchmark, BenchmarkSection, BenchmarkTest, Candidate } from "./types";
 
 export function formatDuration(value: number, unit = "ms"): string {
   if (unit === "ms" && value >= 1000) {
@@ -177,4 +177,49 @@ export function testWinner(test: BenchmarkTest): string | undefined {
 
 export function formatValue(value: number, unit: string): string {
   return unit === "ms" ? formatDuration(value) : `${Number.isInteger(value) ? value : value.toFixed(1)} ${unit}`;
+}
+
+export interface ScorecardColumn {
+  id: string;
+  title: string;
+  unit: string;
+  lowerIsBetter: boolean;
+  winnerId: string;
+}
+
+export interface ScorecardRow {
+  candidateId: string;
+  name: string;
+  /** One entry per column: the candidate's median in that section, or null where it did not run. */
+  cells: (number | null)[];
+}
+
+export interface Scorecard {
+  columns: ScorecardColumn[];
+  rows: ScorecardRow[];
+}
+
+/**
+ * One row per candidate, one column per section, each cell the median of that section's samples:
+ * the numbers a verdict paragraph would otherwise have to spell out. Candidates keep the order of
+ * their first appearance; a candidate absent from a section leaves that cell empty.
+ */
+export function scorecard(sections: BenchmarkSection[]): Scorecard {
+  const columns = sections.map((section) => ({ id: section.id, title: section.title, unit: section.unit, lowerIsBetter: section.lowerIsBetter, winnerId: section.verdict.winnerId }));
+  const order: string[] = [];
+  const names = new Map<string, string>();
+  for (const section of sections) {
+    for (const candidate of section.candidates) {
+      if (!names.has(candidate.id)) {
+        order.push(candidate.id);
+        names.set(candidate.id, candidate.name);
+      }
+    }
+  }
+  const rows = order.map((candidateId) => ({
+    candidateId,
+    name: names.get(candidateId) ?? candidateId,
+    cells: sections.map((section) => section.candidates.find((candidate) => candidate.id === candidateId)?.statistics.medianMs ?? null),
+  }));
+  return { columns, rows };
 }

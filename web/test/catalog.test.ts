@@ -3,7 +3,7 @@ import { assembleCatalog } from "../scripts/assemble";
 import { validateRef, validateRunPath } from "../scripts/sync";
 import { parseCatalog } from "../src/catalog";
 import { headTags, normalizePath, prerenderPaths, routeMeta } from "../src/head";
-import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, standardDeviation, summarize } from "../src/metrics";
+import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, scorecard, standardDeviation, summarize } from "../src/metrics";
 import type { BenchmarkCatalog } from "../src/types";
 
 let _catalog: BenchmarkCatalog | undefined;
@@ -68,6 +68,28 @@ describe("benchmark catalog", () => {
     expect(ticks[0]).toBeGreaterThanOrEqual(71);
     expect(ticks[ticks.length - 1]).toBeLessThanOrEqual(110);
     expect(ticks.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("scorecard", () => {
+  const candidate = (id: string, median: number) => ({ id, name: id.toUpperCase(), version: "1", statistics: { medianMs: median, meanMs: median, minMs: median, maxMs: median }, samplesMs: [median] });
+  const section = (id: string, unit: string, lowerIsBetter: boolean, winnerId: string, candidates: ReturnType<typeof candidate>[]) => ({
+    id, title: id, deck: "", unit, lowerIsBetter, verdict: { winnerId, headline: "", summary: "" }, candidates,
+  });
+
+  test("lays out one row per candidate and one column per section, medians in the cells", () => {
+    const card = scorecard([
+      section("latency", "ms", true, "a", [candidate("a", 10), candidate("b", 20)]),
+      section("throughput", "req/s", false, "b", [candidate("b", 300), candidate("a", 200), candidate("c", 50)]),
+    ]);
+    expect(card.columns.map((c) => [c.id, c.unit, c.lowerIsBetter, c.winnerId])).toEqual([["latency", "ms", true, "a"], ["throughput", "req/s", false, "b"]]);
+    expect(card.rows.map((r) => r.candidateId)).toEqual(["a", "b", "c"]);
+    expect(card.rows.map((r) => r.cells)).toEqual([[10, 200], [20, 300], [null, 50]]);
+    expect(card.rows[2]!.name).toBe("C");
+  });
+
+  test("is empty for a benchmark without sections", () => {
+    expect(scorecard([])).toEqual({ columns: [], rows: [] });
   });
 });
 

@@ -1155,6 +1155,48 @@ th.num {
   font-size: var(--text-lg);
 }
 
+.learned .scorecard {
+  margin-top: 1.5rem;
+}
+
+.scorecard table {
+  min-width: 40rem;
+}
+
+.scorecard caption {
+  padding: 0 0 0.6rem;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  text-align: left;
+  caption-side: top;
+}
+
+.scorecard th .unit {
+  color: var(--fg-faint);
+  font-weight: 500;
+}
+
+.scorecard tbody th {
+  font-weight: 600;
+}
+
+.scorecard td.num {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-stretch: 90%;
+  font-variant-numeric: tabular-nums;
+}
+
+.scorecard .scorecard-winner {
+  color: var(--fast);
+  font-weight: 600;
+}
+
+.learned-summary {
+  max-width: 60ch;
+  margin-top: 1.5rem;
+}
+
 .learned h3 {
   margin-top: 2rem;
   font-size: var(--text-md);
