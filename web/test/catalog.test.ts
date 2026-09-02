@@ -77,15 +77,24 @@ describe("scorecard", () => {
     id, title: id, deck: "", unit, lowerIsBetter, verdict: { winnerId, headline: "", summary: "" }, candidates,
   });
 
-  test("lays out one row per candidate and one column per section, medians in the cells", () => {
+  test("lays out one row per candidate and one column per section, means in the cells", () => {
     const card = scorecard([
       section("latency", "ms", true, "a", [candidate("a", 10), candidate("b", 20)]),
       section("throughput", "req/s", false, "b", [candidate("b", 300), candidate("a", 200), candidate("c", 50)]),
     ]);
-    expect(card.columns.map((c) => [c.id, c.unit, c.lowerIsBetter, c.winnerId])).toEqual([["latency", "ms", true, "a"], ["throughput", "req/s", false, "b"]]);
+    expect(card.columns.map((c) => [c.id, c.unit, c.lowerIsBetter])).toEqual([["latency", "ms", true], ["throughput", "req/s", false]]);
     expect(card.rows.map((r) => r.candidateId)).toEqual(["a", "b", "c"]);
     expect(card.rows.map((r) => r.cells)).toEqual([[10, 200], [20, 300], [null, 50]]);
     expect(card.rows[2]!.name).toBe("C");
+  });
+
+  test("marks the best displayed value, not the verdict's pick, so the mark matches the number", () => {
+    const card = scorecard([
+      section("burst", "ms", true, "b", [candidate("a", 4.7), candidate("b", 4.8)]),
+      section("rps", "req/s", false, "a", [candidate("a", 100), candidate("b", 250)]),
+      section("empty", "ms", true, "a", []),
+    ]);
+    expect(card.columns.map((c) => c.bestId)).toEqual(["a", "b", null]);
   });
 
   test("is empty for a benchmark without sections", () => {

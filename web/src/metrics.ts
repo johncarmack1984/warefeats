@@ -184,13 +184,14 @@ export interface ScorecardColumn {
   title: string;
   unit: string;
   lowerIsBetter: boolean;
-  winnerId: string;
+  /** The candidate with the best displayed value in this column, or null when the column is empty. */
+  bestId: string | null;
 }
 
 export interface ScorecardRow {
   candidateId: string;
   name: string;
-  /** One entry per column: the candidate's median in that section, or null where it did not run. */
+  /** One entry per column: the candidate's mean in that section, or null where it did not run. */
   cells: (number | null)[];
 }
 
@@ -200,12 +201,13 @@ export interface Scorecard {
 }
 
 /**
- * One row per candidate, one column per section, each cell the median of that section's samples:
- * the numbers a verdict paragraph would otherwise have to spell out. Candidates keep the order of
- * their first appearance; a candidate absent from a section leaves that cell empty.
+ * One row per candidate, one column per section, each cell the mean of that section's samples (the
+ * statistic the section's charts and the hyperfine summary already use). The best value in each
+ * column is computed from the cells themselves, so the mark always agrees with the number shown.
+ * Candidates keep the order of their first appearance; a candidate absent from a section leaves that
+ * cell empty.
  */
 export function scorecard(sections: BenchmarkSection[]): Scorecard {
-  const columns = sections.map((section) => ({ id: section.id, title: section.title, unit: section.unit, lowerIsBetter: section.lowerIsBetter, winnerId: section.verdict.winnerId }));
   const order: string[] = [];
   const names = new Map<string, string>();
   for (const section of sections) {
@@ -219,7 +221,20 @@ export function scorecard(sections: BenchmarkSection[]): Scorecard {
   const rows = order.map((candidateId) => ({
     candidateId,
     name: names.get(candidateId) ?? candidateId,
-    cells: sections.map((section) => section.candidates.find((candidate) => candidate.id === candidateId)?.statistics.medianMs ?? null),
+    cells: sections.map((section) => section.candidates.find((candidate) => candidate.id === candidateId)?.statistics.meanMs ?? null),
   }));
+  const columns = sections.map((section, index) => {
+    let bestId: string | null = null;
+    let best: number | null = null;
+    for (const row of rows) {
+      const value = row.cells[index];
+      if (value === null || value === undefined) continue;
+      if (best === null || (section.lowerIsBetter ? value < best : value > best)) {
+        best = value;
+        bestId = row.candidateId;
+      }
+    }
+    return { id: section.id, title: section.title, unit: section.unit, lowerIsBetter: section.lowerIsBetter, bestId };
+  });
   return { columns, rows };
 }

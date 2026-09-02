@@ -2378,8 +2378,8 @@
       "lowerIsBetter": true,
       "verdict": {
         "winnerId": "martin",
-        "headline": "Martin served its first tile 130 ms after process start; ldproxy took 2.84 s",
-        "summary": "Each sample is one container start measured from Docker's StartedAt to the first 200 response."
+        "headline": "Martin served its first tile 133 ms after process start on average; ldproxy took 3.71 s",
+        "summary": "Each sample is one container start measured from Docker's StartedAt to the first 200 response; five starts per server."
       },
       "candidates": [
         {
@@ -2402,6 +2402,11 @@
             130
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 133,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 130,
               "unit": "ms",
@@ -2439,6 +2444,11 @@
             141
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 142,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 141,
               "unit": "ms",
@@ -2476,6 +2486,11 @@
             134
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 147,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 145,
               "unit": "ms",
@@ -2513,6 +2528,11 @@
             147
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 149,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 149,
               "unit": "ms",
@@ -2550,6 +2570,11 @@
             504
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 508,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 498,
               "unit": "ms",
@@ -2587,6 +2612,11 @@
             4363
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 3709,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 2838,
               "unit": "ms",
@@ -2624,6 +2654,11 @@
             5310
           ],
           "metrics": {
+            "first-tile-mean": {
+              "value": 3686,
+              "unit": "ms",
+              "label": "Mean time to first tile"
+            },
             "first-tile-median": {
               "value": 2628,
               "unit": "ms",
@@ -2646,21 +2681,21 @@
         {
           "id": "first-tile",
           "title": "Time to first tile",
-          "description": "Median time from container process start until the building tile is served, including schema discovery.",
+          "description": "Mean time from container process start until the building tile is served, including schema discovery, over five starts.",
           "unit": "ms",
           "lowerIsBetter": true,
           "results": [
             {
               "candidateId": "martin",
-              "value": 130
+              "value": 133
             },
             {
               "candidateId": "tegola",
-              "value": 141
+              "value": 142
             },
             {
               "candidateId": "bbox",
-              "value": 145
+              "value": 147
             },
             {
               "candidateId": "pg-tileserv",
@@ -2668,15 +2703,15 @@
             },
             {
               "candidateId": "tipg",
-              "value": 498
+              "value": 508
             },
             {
               "candidateId": "ldproxy",
-              "value": 2838
+              "value": 3709
             },
             {
               "candidateId": "ldproxy-pgis",
-              "value": 2628
+              "value": 3686
             }
           ]
         },
