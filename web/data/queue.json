@@ -32,9 +32,9 @@
     },
     {
       "category": "Tile servers",
-      "title": "Martin vs BBOX",
-      "question": "Cold starts, throughput, operations",
-      "status": "Planned"
+      "title": "Martin vs Tegola vs BBOX vs pg_tileserv vs TiPg vs ldproxy",
+      "question": "Single-tile latency, throughput at 10 and 100 clients, cold start, memory",
+      "status": "Published"
     }
   ]
 }
