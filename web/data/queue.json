@@ -28,7 +28,7 @@
       "category": "Web maps",
       "title": "MapLibre vs Mapbox",
       "question": "Frame time, memory, visual parity",
-      "status": "Planned"
+      "status": "Running"
     },
     {
       "category": "Tile servers",

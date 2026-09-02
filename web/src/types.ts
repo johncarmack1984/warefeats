@@ -34,6 +34,12 @@ export interface Benchmark {
     os: string;
     arch: string;
     runtime: string;
+    /** GPU model and driver, for workloads that render in a browser on a GPU. */
+    gpu?: string;
+    /** Browser build and rendering backend, for workloads that render in a browser. */
+    browser?: string;
+    /** Viewport, scale factor, and whether a physical display was attached. */
+    display?: string;
   };
   protocol: {
     warmups: number;

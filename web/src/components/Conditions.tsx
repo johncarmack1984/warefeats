@@ -21,6 +21,9 @@ export function Conditions({ benchmark }: ConditionsProps) {
           <div><dt>Memory</dt><dd>{environment.memory}</dd></div>
           <div><dt>OS</dt><dd>{environment.os} ({environment.arch})</dd></div>
           <div><dt>Runtime</dt><dd>{environment.runtime}</dd></div>
+          {environment.gpu ? <div><dt>GPU</dt><dd>{environment.gpu}</dd></div> : null}
+          {environment.browser ? <div><dt>Browser</dt><dd>{environment.browser}</dd></div> : null}
+          {environment.display ? <div><dt>Display</dt><dd>{environment.display}</dd></div> : null}
         </dl>
         {corpus ? (
           <dl className="kv">
