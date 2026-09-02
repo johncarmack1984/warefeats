@@ -24,7 +24,7 @@
     {
       "slug": "postgis-vector-tile-servers",
       "repo": "warefeats/vector-tile-servers",
-      "ref": "5952cba88aa541cde18db7b37d6c798a2010d0df"
+      "ref": "20fff380a316b4c3f353d48e1cdec2ba1f0ca0c8"
     }
   ]
 }
