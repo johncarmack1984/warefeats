@@ -1,10 +1,13 @@
 import { describe, expect, test } from "bun:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { assembleCatalog } from "../scripts/assemble";
 import { validateRef, validateRunPath } from "../scripts/sync";
 import { parseCatalog } from "../src/catalog";
+import { Conditions } from "../src/components/Conditions";
 import { headTags, normalizePath, prerenderPaths, routeMeta } from "../src/head";
 import { axisTicks, benchmarkTests, fiveNumber, reportText, samplePosition, scorecard, standardDeviation, summarize } from "../src/metrics";
-import type { BenchmarkCatalog } from "../src/types";
+import type { Benchmark, BenchmarkCatalog } from "../src/types";
 
 let _catalog: BenchmarkCatalog | undefined;
 async function loadCatalog() {
@@ -378,6 +381,60 @@ describe("catalog validation", () => {
     expect(catalog.benchmarks[0]!.runs).toBeUndefined();
   });
 
+  test("accepts the optional gpu, browser and display environment fields", () => {
+    const candidates = [
+      { id: "a", name: "A", version: "1.0", statistics: { medianMs: 1, meanMs: 1, minMs: 1, maxMs: 1 }, samplesMs: [1] },
+      { id: "b", name: "B", version: "1.0", statistics: { medianMs: 2, meanMs: 2, minMs: 2, maxMs: 2 }, samplesMs: [2] },
+    ];
+    const protocol = { warmups: 0, runs: 1, processModel: "single", cacheState: "cold", output: "frame time" };
+    const catalog = parseCatalog({
+      schemaVersion: 1,
+      generatedAt: "2026-09-02T00:00:00Z",
+      queue: [],
+      benchmarks: [
+        {
+          id: "gpu-rig",
+          slug: "gpu-rig",
+          category: "Test",
+          title: "GPU rig",
+          deck: "Test",
+          publishedAt: "2026-09-02",
+          unit: "ms",
+          lowerIsBetter: true,
+          verdict: { winnerId: "a", headline: "A", summary: "A" },
+          environment: {
+            machine: "MacBook Pro", chip: "Apple M2 Max", cores: "12", memory: "96 GB", os: "macOS 15.6", arch: "arm64", runtime: "Bun 1.2",
+            gpu: "Apple M2 Max 38-core (Metal 3)", browser: "Chromium 140 (ANGLE Metal)", display: "1280×800 @2x, physical display attached",
+          },
+          protocol,
+          candidates,
+          limitations: [],
+        },
+        {
+          id: "cpu-rig",
+          slug: "cpu-rig",
+          category: "Test",
+          title: "CPU rig",
+          deck: "Test",
+          publishedAt: "2026-09-02",
+          unit: "ms",
+          lowerIsBetter: true,
+          verdict: { winnerId: "a", headline: "A", summary: "A" },
+          environment: { machine: "T", chip: "T", cores: "1", memory: "1 GB", os: "T", arch: "arm64", runtime: "T" },
+          protocol,
+          candidates,
+          limitations: [],
+        },
+      ],
+    });
+    expect(catalog.benchmarks[0]!.environment.gpu).toBe("Apple M2 Max 38-core (Metal 3)");
+    expect(catalog.benchmarks[0]!.environment.browser).toBe("Chromium 140 (ANGLE Metal)");
+    expect(catalog.benchmarks[0]!.environment.display).toBe("1280×800 @2x, physical display attached");
+    expect(catalog.benchmarks[1]!.environment.gpu).toBeUndefined();
+    expect(catalog.benchmarks[1]!.environment.browser).toBeUndefined();
+    expect(catalog.benchmarks[1]!.environment.display).toBeUndefined();
+  });
+
   test("rejects a run entry with missing id or label", () => {
     expect(() => parseCatalog({
       schemaVersion: 1,
@@ -539,6 +596,37 @@ describe("sections-only run assembly", () => {
     expect(catalog.benchmarks[0]!.runs).toHaveLength(1);
     expect(catalog.benchmarks[0]!.runs![0]!.sections).toHaveLength(1);
     expect(catalog.benchmarks[0]!.runs![0]!.candidates).toBeUndefined();
+  });
+});
+
+describe("conditions", () => {
+  const benchmark: Benchmark = {
+    id: "rig",
+    slug: "rig",
+    category: "Test",
+    title: "Rig",
+    deck: "Test",
+    publishedAt: "2026-09-02",
+    unit: "ms",
+    lowerIsBetter: true,
+    verdict: { winnerId: "a", headline: "A", summary: "A" },
+    environment: { machine: "MacBook Pro", chip: "Apple M2 Max", cores: "12", memory: "96 GB", os: "macOS 15.6", arch: "arm64", runtime: "Bun 1.2" },
+    protocol: { warmups: 0, runs: 1, processModel: "single", cacheState: "cold", output: "frame time" },
+    candidates: [],
+    limitations: [],
+  };
+  const rigRows = (html: string) => [...html.matchAll(/<dt>([^<]+)<\/dt>/g)].map((m) => m[1]);
+
+  test("lists GPU, Browser and Display rows only when the environment has them", () => {
+    const withoutGpu = renderToStaticMarkup(createElement(Conditions, { benchmark }));
+    expect(rigRows(withoutGpu)).toEqual(["Machine", "Chip", "Cores", "Memory", "OS", "Runtime", "Warmups", "Measured", "Process", "Cache", "Output"]);
+
+    const gpu = { gpu: "Apple M2 Max 38-core (Metal 3)", browser: "Chromium 140 (ANGLE Metal)", display: "1280×800 @2x, physical display attached" };
+    const withGpu = renderToStaticMarkup(createElement(Conditions, { benchmark: { ...benchmark, environment: { ...benchmark.environment, ...gpu } } }));
+    expect(rigRows(withGpu)).toEqual(["Machine", "Chip", "Cores", "Memory", "OS", "Runtime", "GPU", "Browser", "Display", "Warmups", "Measured", "Process", "Cache", "Output"]);
+    expect(withGpu).toContain("<dt>GPU</dt><dd>Apple M2 Max 38-core (Metal 3)</dd>");
+    expect(withGpu).toContain("<dt>Browser</dt><dd>Chromium 140 (ANGLE Metal)</dd>");
+    expect(withGpu).toContain("<dt>Display</dt><dd>1280×800 @2x, physical display attached</dd>");
   });
 });
 
