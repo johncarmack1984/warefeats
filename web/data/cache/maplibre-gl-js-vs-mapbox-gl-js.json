@@ -1,0 +1,1027 @@
+{
+  "id": "web-map-renderers-2026-09",
+  "slug": "maplibre-gl-js-vs-mapbox-gl-js",
+  "category": "Web maps",
+  "title": "MapLibre GL JS vs Mapbox GL JS",
+  "deck": "The fork measured against the code it forked from. mapbox-gl 1.13.3, the last BSD-licensed Mapbox release, beside maplibre-gl 5.24.0 and 6.7.0, all three fed the same self-hosted Berlin tiles, style, sprites and glyphs in one pinned Chromium on one GPU: startup timeline, frame time cold and warm, memory. I've committed code to MapLibre. The runner's public; check my numbers.",
+  "publishedAt": "2026-09-02",
+  "unit": "ms",
+  "lowerIsBetter": true,
+  "verdict": {
+    "winnerId": "maplibre-gl-5",
+    "headline": "MapLibre GL JS 5 painted a warm frame in 3.1 ms to Mapbox GL JS 1.13's 6.5 ms and held 919 MB to its 1,448 MB after the same camera path; 1.13 drew its first complete frame in 193 ms to MapLibre's 335, starting six workers to MapLibre's one",
+    "summary": "Five years after the fork, the renderer is where MapLibre pulled ahead: with every tile resident and the camera moving every frame, both MapLibre builds paint a frame in about half the time of the code they forked, and MapLibre 5 holds a third less memory after the same path. Startup went the other way, and for a reason that is in the defaults rather than the engine: mapbox-gl 1.13 starts six Web Workers on this 16-thread machine and parses the initial tiles in parallel, while MapLibre restricted its default to one worker, so 1.13 reaches its first complete frame in 193 ms to MapLibre's 335 and 351 with fades off. The default-fade marks tell a different story only because 1.13 holds its idle event until its 300 ms label fade ends and MapLibre does not. The cold pan, which is fetch, parse, layout and paint per view, ordered the three the other way round from the warm paint: MapLibre 6 fastest at 592 ms per view, 1.13 at 631, MapLibre 5 at 700. MapLibre 6 costs about 9 percent more memory and 4 percent more per warm frame than MapLibre 5, and that is its new default of overscaling four zoom levels past the source's maxzoom, which also raises its tile requests per pass to 374 against MapLibre 5's 225. The scorecard below has the section means; the limitations say what these numbers do not mean."
+  },
+  "environment": {
+    "machine": "BOSGAME EffiZen ARB19B mini PC",
+    "chip": "AMD Ryzen 7 6800H with Radeon Graphics",
+    "cores": "8 cores / 16 threads",
+    "memory": "24 GB at 4800 MT/s",
+    "os": "Microsoft Windows 11 Pro 24H2 (build 26100)",
+    "arch": "x64",
+    "runtime": "Playwright 1.62.1 Chromium 151.0.7922.34 headless shell; Bun 1.4.0 harness and loopback static server",
+    "gpu": "AMD Radeon 680M, integrated in the Ryzen 7 6800H, driver 32.0.12033.1030 (2024-11-26)",
+    "browser": "Chromium 151.0.7922.34, ANGLE (AMD, AMD Radeon(TM) Graphics (0x00001681) Direct3D11 vs_5_0 ps_5_0, D3D11); flags --use-angle=d3d11 --use-gl=angle --ignore-gpu-blocklist --disable-gpu-vsync --disable-frame-rate-limit --disable-background-timer-throttling --disable-renderer-backgrounding",
+    "display": "1280x800 at 1x, offscreen; 1920x1080 at 59 Hz attached"
+  },
+  "protocol": {
+    "warmups": 2,
+    "runs": 15,
+    "processModel": "One Chromium process for startup and frame time, fresh browser context per pass, candidates interleaved and rotated each pass; 15 memory samples with a fresh browser process each; every request outside loopback fails at the resolver and any attempt invalidates the run",
+    "cacheState": "Fresh context per pass, no HTTP cache; timing passes run with maxTileCacheSize 10000 so the warm traversal is warm, memory samples with each library's default tile cache; tiles served gzip from one MBTiles by the harness",
+    "output": "The map's own events timed with performance.now() under cross-origin isolation; Playwright screenshots and queryRenderedFeatures for the parity gate; process memory from the OS"
+  },
+  "candidates": [],
+  "sections": [
+    {
+      "id": "startup",
+      "title": "Startup timeline",
+      "deck": "From script tag to a drawn map of Berlin Mitte at z11, read from the events every build fires: bundle import, style load, first tile, load, first idle. The headline mark is load with fades off, because the builds disagree about whether a fade counts. Plus 5,000 GeoJSON polygons added to the settled map.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "mapbox-gl-1-13",
+        "headline": "Mapbox GL JS 1.13 drew the first complete frame in 193 ms on average; MapLibre GL JS 6 took 351 ms (1.82x)",
+        "summary": "Time from map construction to the load event with fades off, one sample per measured pass, fresh browser context every pass."
+      },
+      "candidates": [
+        {
+          "id": "mapbox-gl-1-13",
+          "name": "Mapbox GL JS 1.13",
+          "version": "1.13.3",
+          "color": "#4264FB",
+          "homepage": "https://github.com/mapbox/mapbox-gl-js/tree/v1.13.3",
+          "statistics": {
+            "medianMs": 191.915,
+            "meanMs": 192.674,
+            "minMs": 186.275,
+            "maxMs": 202.22
+          },
+          "samplesMs": [
+            191.75,
+            190.03,
+            186.275,
+            198,
+            192.73,
+            191.915,
+            191.03,
+            186.58,
+            195.98,
+            202.22,
+            198.65,
+            194.27,
+            193.065,
+            188.89,
+            188.73
+          ],
+          "metrics": {
+            "import-mean": {
+              "value": 23.8,
+              "unit": "ms",
+              "label": "Bundle import mean"
+            },
+            "style-load-mean": {
+              "value": 32.9,
+              "unit": "ms",
+              "label": "Style load mean"
+            },
+            "first-tile-mean": {
+              "value": 148.6,
+              "unit": "ms",
+              "label": "First tile mean"
+            },
+            "load-mean": {
+              "value": 200.8,
+              "unit": "ms",
+              "label": "Load, default fade mean"
+            },
+            "first-idle-mean": {
+              "value": 661.1,
+              "unit": "ms",
+              "label": "First idle, default fade mean"
+            },
+            "load-no-fade-mean": {
+              "value": 192.7,
+              "unit": "ms",
+              "label": "Load with fades off, mean"
+            },
+            "first-idle-no-fade-mean": {
+              "value": 198.1,
+              "unit": "ms",
+              "label": "First idle with fades off, mean"
+            },
+            "geojson-5k-mean": {
+              "value": 403.9,
+              "unit": "ms",
+              "label": "5,000 building polygons added until idle, mean"
+            },
+            "bundle-raw": {
+              "value": 767202,
+              "unit": "B",
+              "label": "JavaScript served, uncompressed"
+            },
+            "bundle-gzip": {
+              "value": 196495,
+              "unit": "B",
+              "label": "JavaScript served, gzip -9"
+            },
+            "bundle-brotli": {
+              "value": 162298,
+              "unit": "B",
+              "label": "JavaScript served, brotli 11"
+            },
+            "tile-requests": {
+              "value": 408,
+              "unit": "requests",
+              "label": "Tile requests per pass"
+            },
+            "workers": {
+              "value": 6,
+              "unit": "workers",
+              "label": "Web Workers the library started by default"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-5",
+          "name": "MapLibre GL JS 5",
+          "version": "5.24.0",
+          "color": "#295DAA",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 331.96,
+            "meanMs": 334.755,
+            "minMs": 322.665,
+            "maxMs": 346.22
+          },
+          "samplesMs": [
+            343.92,
+            331.96,
+            324.865,
+            329.325,
+            322.665,
+            323.4,
+            328.71,
+            341.875,
+            344.645,
+            343.52,
+            346.22,
+            327.685,
+            326.785,
+            341.22,
+            344.535
+          ],
+          "metrics": {
+            "import-mean": {
+              "value": 29.7,
+              "unit": "ms",
+              "label": "Bundle import mean"
+            },
+            "style-load-mean": {
+              "value": 32.2,
+              "unit": "ms",
+              "label": "Style load mean"
+            },
+            "first-tile-mean": {
+              "value": 255.4,
+              "unit": "ms",
+              "label": "First tile mean"
+            },
+            "load-mean": {
+              "value": 330.2,
+              "unit": "ms",
+              "label": "Load, default fade mean"
+            },
+            "first-idle-mean": {
+              "value": 345.9,
+              "unit": "ms",
+              "label": "First idle, default fade mean"
+            },
+            "load-no-fade-mean": {
+              "value": 334.8,
+              "unit": "ms",
+              "label": "Load with fades off, mean"
+            },
+            "first-idle-no-fade-mean": {
+              "value": 347.5,
+              "unit": "ms",
+              "label": "First idle with fades off, mean"
+            },
+            "geojson-5k-mean": {
+              "value": 350.1,
+              "unit": "ms",
+              "label": "5,000 building polygons added until idle, mean"
+            },
+            "bundle-raw": {
+              "value": 1056837,
+              "unit": "B",
+              "label": "JavaScript served, uncompressed"
+            },
+            "bundle-gzip": {
+              "value": 276298,
+              "unit": "B",
+              "label": "JavaScript served, gzip -9"
+            },
+            "bundle-brotli": {
+              "value": 224810,
+              "unit": "B",
+              "label": "JavaScript served, brotli 11"
+            },
+            "tile-requests": {
+              "value": 225,
+              "unit": "requests",
+              "label": "Tile requests per pass"
+            },
+            "workers": {
+              "value": 1,
+              "unit": "workers",
+              "label": "Web Workers the library started by default"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-6",
+          "name": "MapLibre GL JS 6",
+          "version": "6.7.0",
+          "color": "#3FB1CE",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 347.285,
+            "meanMs": 351.055,
+            "minMs": 336.565,
+            "maxMs": 378.28
+          },
+          "samplesMs": [
+            350.895,
+            346.445,
+            355.26,
+            345.455,
+            351.9,
+            354.875,
+            347.285,
+            378.28,
+            346.46,
+            355.65,
+            344.26,
+            346.49,
+            339.585,
+            366.42,
+            336.565
+          ],
+          "metrics": {
+            "import-mean": {
+              "value": 37.7,
+              "unit": "ms",
+              "label": "Bundle import mean"
+            },
+            "style-load-mean": {
+              "value": 32.2,
+              "unit": "ms",
+              "label": "Style load mean"
+            },
+            "first-tile-mean": {
+              "value": 257.9,
+              "unit": "ms",
+              "label": "First tile mean"
+            },
+            "load-mean": {
+              "value": 333,
+              "unit": "ms",
+              "label": "Load, default fade mean"
+            },
+            "first-idle-mean": {
+              "value": 348.3,
+              "unit": "ms",
+              "label": "First idle, default fade mean"
+            },
+            "load-no-fade-mean": {
+              "value": 351.1,
+              "unit": "ms",
+              "label": "Load with fades off, mean"
+            },
+            "first-idle-no-fade-mean": {
+              "value": 360.4,
+              "unit": "ms",
+              "label": "First idle with fades off, mean"
+            },
+            "geojson-5k-mean": {
+              "value": 330.1,
+              "unit": "ms",
+              "label": "5,000 building polygons added until idle, mean"
+            },
+            "bundle-raw": {
+              "value": 1089551,
+              "unit": "B",
+              "label": "JavaScript served, uncompressed"
+            },
+            "bundle-gzip": {
+              "value": 290210,
+              "unit": "B",
+              "label": "JavaScript served, gzip -9"
+            },
+            "bundle-brotli": {
+              "value": 241507,
+              "unit": "B",
+              "label": "JavaScript served, brotli 11"
+            },
+            "tile-requests": {
+              "value": 374,
+              "unit": "requests",
+              "label": "Tile requests per pass"
+            },
+            "workers": {
+              "value": 1,
+              "unit": "workers",
+              "label": "Web Workers the library started by default"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "load-no-fade",
+          "title": "Load, fades off",
+          "description": "Map constructed until the load event with fadeDuration 0: style, every tile in the view fetched and parsed, everything drawn once. The one startup mark that means the same amount of work in all three builds.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 192.7
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 334.8
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 351.1
+            }
+          ]
+        },
+        {
+          "id": "import",
+          "title": "Bundle import",
+          "description": "Script or module tag inserted until the library has evaluated, from the loopback server.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 23.8
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 29.7
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 37.7
+            }
+          ]
+        },
+        {
+          "id": "style-load",
+          "title": "Style load",
+          "description": "Map constructed until the style.load event: style JSON fetched and parsed, layers created.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 32.9
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 32.2
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 32.2
+            }
+          ]
+        },
+        {
+          "id": "first-tile",
+          "title": "First tile",
+          "description": "Map constructed until the first vector tile has been fetched and parsed by a worker.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 148.6
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 255.4
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 257.9
+            }
+          ]
+        },
+        {
+          "id": "load",
+          "title": "Load, default fade",
+          "description": "Map constructed until the load event with the default 300 ms fade. mapbox-gl 1.13 holds this event until its tile fade has finished; the MapLibre builds do not, so this mark is what each build reports, not the same amount of work.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 200.8
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 330.2
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 333
+            }
+          ]
+        },
+        {
+          "id": "first-idle",
+          "title": "First idle, default fade",
+          "description": "Map constructed until the first idle event after load with the default 300 ms fade. mapbox-gl 1.13 also holds idle until its label fade has finished; the MapLibre builds fire idle within a few milliseconds of load.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 661.1
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 345.9
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 348.3
+            }
+          ]
+        },
+        {
+          "id": "geojson-5k",
+          "title": "GeoJSON, 5,000 buildings",
+          "description": "A pre-parsed FeatureCollection of 5,000 Berlin building footprints added as a fill layer to the idle map, until the next idle.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 403.9
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 350.1
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 330.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frame-time",
+      "title": "Frame time",
+      "deck": "One deterministic camera path over Berlin, traversed twice: cold, waiting for idle at each of the views so tiles are fetched and parsed on the way; then warm, moving the camera every frame with everything resident.",
+      "unit": "ms",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "maplibre-gl-5",
+        "headline": "MapLibre GL JS 5 painted a warm frame in 3.06 ms on average; Mapbox GL JS 1.13 took 6.53 ms (2.14x)",
+        "summary": "Per-pass mean frame time over the warm traversal is the sample."
+      },
+      "candidates": [
+        {
+          "id": "mapbox-gl-1-13",
+          "name": "Mapbox GL JS 1.13",
+          "version": "1.13.3",
+          "color": "#4264FB",
+          "homepage": "https://github.com/mapbox/mapbox-gl-js/tree/v1.13.3",
+          "statistics": {
+            "medianMs": 6.619,
+            "meanMs": 6.532,
+            "minMs": 6.058,
+            "maxMs": 6.741
+          },
+          "samplesMs": [
+            6.615,
+            6.651,
+            6.243,
+            6.556,
+            6.058,
+            6.643,
+            6.366,
+            6.692,
+            6.619,
+            6.367,
+            6.402,
+            6.741,
+            6.644,
+            6.718,
+            6.669
+          ],
+          "metrics": {
+            "cold-view-mean": {
+              "value": 630.6,
+              "unit": "ms",
+              "label": "Cold pan, mean per view"
+            },
+            "cold-view-p99": {
+              "value": 831.2,
+              "unit": "ms",
+              "label": "Cold pan, p99 view"
+            },
+            "warm-frame-mean": {
+              "value": 6.53,
+              "unit": "ms",
+              "label": "Warm paint, mean per frame"
+            },
+            "warm-frame-median": {
+              "value": 5.07,
+              "unit": "ms",
+              "label": "Warm paint, median frame"
+            },
+            "warm-frame-p99": {
+              "value": 23.71,
+              "unit": "ms",
+              "label": "Warm paint, p99 frame"
+            },
+            "warm-tile-requests": {
+              "value": 122.1,
+              "unit": "requests",
+              "label": "Tile requests during the measured warm traversal, mean per pass"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-5",
+          "name": "MapLibre GL JS 5",
+          "version": "5.24.0",
+          "color": "#295DAA",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 3.056,
+            "meanMs": 3.058,
+            "minMs": 2.911,
+            "maxMs": 3.202
+          },
+          "samplesMs": [
+            3.014,
+            3.109,
+            3.129,
+            3.043,
+            3.015,
+            3.091,
+            2.999,
+            3.179,
+            3.056,
+            2.997,
+            2.911,
+            3.063,
+            2.933,
+            3.202,
+            3.13
+          ],
+          "metrics": {
+            "cold-view-mean": {
+              "value": 700.1,
+              "unit": "ms",
+              "label": "Cold pan, mean per view"
+            },
+            "cold-view-p99": {
+              "value": 1619.9,
+              "unit": "ms",
+              "label": "Cold pan, p99 view"
+            },
+            "warm-frame-mean": {
+              "value": 3.06,
+              "unit": "ms",
+              "label": "Warm paint, mean per frame"
+            },
+            "warm-frame-median": {
+              "value": 2.41,
+              "unit": "ms",
+              "label": "Warm paint, median frame"
+            },
+            "warm-frame-p99": {
+              "value": 10.7,
+              "unit": "ms",
+              "label": "Warm paint, p99 frame"
+            },
+            "warm-tile-requests": {
+              "value": 26.5,
+              "unit": "requests",
+              "label": "Tile requests during the measured warm traversal, mean per pass"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-6",
+          "name": "MapLibre GL JS 6",
+          "version": "6.7.0",
+          "color": "#3FB1CE",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 3.178,
+            "meanMs": 3.185,
+            "minMs": 3.071,
+            "maxMs": 3.273
+          },
+          "samplesMs": [
+            3.246,
+            3.246,
+            3.178,
+            3.252,
+            3.137,
+            3.131,
+            3.245,
+            3.145,
+            3.098,
+            3.071,
+            3.145,
+            3.249,
+            3.273,
+            3.121,
+            3.241
+          ],
+          "metrics": {
+            "cold-view-mean": {
+              "value": 591.5,
+              "unit": "ms",
+              "label": "Cold pan, mean per view"
+            },
+            "cold-view-p99": {
+              "value": 1369.1,
+              "unit": "ms",
+              "label": "Cold pan, p99 view"
+            },
+            "warm-frame-mean": {
+              "value": 3.19,
+              "unit": "ms",
+              "label": "Warm paint, mean per frame"
+            },
+            "warm-frame-median": {
+              "value": 2.52,
+              "unit": "ms",
+              "label": "Warm paint, median frame"
+            },
+            "warm-frame-p99": {
+              "value": 10.68,
+              "unit": "ms",
+              "label": "Warm paint, p99 frame"
+            },
+            "warm-tile-requests": {
+              "value": 53.8,
+              "unit": "requests",
+              "label": "Tile requests during the measured warm traversal, mean per pass"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "cold-pan",
+          "title": "Cold pan, per view",
+          "description": "Mean time per view over the 60-view camera path, each view advanced only when the map reports idle, so fetch, parse, layout and paint are all inside it.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 630.6
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 700.1
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 591.5
+            }
+          ]
+        },
+        {
+          "id": "warm-paint",
+          "title": "Warm paint, per frame",
+          "description": "Mean time per frame over the 600-step camera path, the camera moved on every render event, vsync and the frame-rate limit off. Every tile the cold pan loaded is resident; tiles only needed at intermediate camera states are still requested and abandoned as the camera moves on, and those requests are counted beside the timings and included in the frame time.",
+          "unit": "ms",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 6.53
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 3.06
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 3.19
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "title": "Memory",
+      "deck": "Private bytes of the renderer and GPU processes, fresh browser process per sample, minus a blank-page baseline.",
+      "unit": "MB",
+      "lowerIsBetter": true,
+      "verdict": {
+        "winnerId": "maplibre-gl-5",
+        "headline": "MapLibre GL JS 5 held 919 MB over baseline after the camera path; Mapbox GL JS 1.13 held 1448 MB (1.58x)",
+        "summary": "Renderer plus GPU process memory over a blank-page baseline after the camera path, one fresh browser process per sample."
+      },
+      "candidates": [
+        {
+          "id": "mapbox-gl-1-13",
+          "name": "Mapbox GL JS 1.13",
+          "version": "1.13.3",
+          "color": "#4264FB",
+          "homepage": "https://github.com/mapbox/mapbox-gl-js/tree/v1.13.3",
+          "statistics": {
+            "medianMs": 1433.92,
+            "meanMs": 1448.443,
+            "minMs": 1271.54,
+            "maxMs": 1633.54
+          },
+          "samplesMs": [
+            1542.32,
+            1589.01,
+            1430.61,
+            1271.54,
+            1376.75,
+            1493.66,
+            1444.95,
+            1516.01,
+            1426.07,
+            1420.82,
+            1433.92,
+            1323.9,
+            1330.49,
+            1633.54,
+            1493.06
+          ],
+          "metrics": {
+            "after-idle-mean": {
+              "value": 334.8,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after first idle, mean"
+            },
+            "after-path-mean": {
+              "value": 1448.4,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after the camera path, mean"
+            },
+            "renderer-after-path": {
+              "value": 702.4,
+              "unit": "MB",
+              "label": "Renderer process over baseline after the camera path"
+            },
+            "gpu-after-path": {
+              "value": 746.1,
+              "unit": "MB",
+              "label": "GPU process over baseline after the camera path"
+            },
+            "js-heap-after-idle": {
+              "value": 12.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after first idle"
+            },
+            "js-heap-after-path": {
+              "value": 12.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after the camera path"
+            },
+            "memory-samples": {
+              "value": 15,
+              "unit": "samples",
+              "label": "Memory samples measured"
+            },
+            "browser-relaunches": {
+              "value": 3,
+              "unit": "relaunches",
+              "label": "Fresh browsers that died and were relaunched during memory sampling"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-5",
+          "name": "MapLibre GL JS 5",
+          "version": "5.24.0",
+          "color": "#295DAA",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 896.94,
+            "meanMs": 918.58,
+            "minMs": 804.84,
+            "maxMs": 1029.11
+          },
+          "samplesMs": [
+            1029.11,
+            1027.61,
+            888.77,
+            887.17,
+            983.28,
+            868.63,
+            1005.52,
+            935.59,
+            890.68,
+            899.44,
+            887.36,
+            804.84,
+            866.31,
+            896.94,
+            907.45
+          ],
+          "metrics": {
+            "after-idle-mean": {
+              "value": 186.3,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after first idle, mean"
+            },
+            "after-path-mean": {
+              "value": 918.6,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after the camera path, mean"
+            },
+            "renderer-after-path": {
+              "value": 303.1,
+              "unit": "MB",
+              "label": "Renderer process over baseline after the camera path"
+            },
+            "gpu-after-path": {
+              "value": 615.4,
+              "unit": "MB",
+              "label": "GPU process over baseline after the camera path"
+            },
+            "js-heap-after-idle": {
+              "value": 10.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after first idle"
+            },
+            "js-heap-after-path": {
+              "value": 10.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after the camera path"
+            },
+            "memory-samples": {
+              "value": 15,
+              "unit": "samples",
+              "label": "Memory samples measured"
+            },
+            "browser-relaunches": {
+              "value": 1,
+              "unit": "relaunches",
+              "label": "Fresh browsers that died and were relaunched during memory sampling"
+            }
+          }
+        },
+        {
+          "id": "maplibre-gl-6",
+          "name": "MapLibre GL JS 6",
+          "version": "6.7.0",
+          "color": "#3FB1CE",
+          "homepage": "https://maplibre.org/maplibre-gl-js/docs/",
+          "statistics": {
+            "medianMs": 1015.75,
+            "meanMs": 1004.617,
+            "minMs": 878.06,
+            "maxMs": 1151.13
+          },
+          "samplesMs": [
+            1042.08,
+            1151.13,
+            1076.87,
+            1039.79,
+            878.06,
+            1013.75,
+            1044.87,
+            1015.75,
+            958.76,
+            979.54,
+            969.12,
+            1041.87,
+            923.5,
+            1028.07,
+            906.09
+          ],
+          "metrics": {
+            "after-idle-mean": {
+              "value": 186.1,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after first idle, mean"
+            },
+            "after-path-mean": {
+              "value": 1004.6,
+              "unit": "MB",
+              "label": "Renderer + GPU process over baseline after the camera path, mean"
+            },
+            "renderer-after-path": {
+              "value": 505,
+              "unit": "MB",
+              "label": "Renderer process over baseline after the camera path"
+            },
+            "gpu-after-path": {
+              "value": 499.6,
+              "unit": "MB",
+              "label": "GPU process over baseline after the camera path"
+            },
+            "js-heap-after-idle": {
+              "value": 10.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after first idle"
+            },
+            "js-heap-after-path": {
+              "value": 10.1,
+              "unit": "MB",
+              "label": "JS heap (main thread only; tile data lives in workers) after the camera path"
+            },
+            "memory-samples": {
+              "value": 15,
+              "unit": "samples",
+              "label": "Memory samples measured"
+            },
+            "browser-relaunches": {
+              "value": 0,
+              "unit": "relaunches",
+              "label": "Fresh browsers that died and were relaunched during memory sampling"
+            }
+          }
+        }
+      ],
+      "tests": [
+        {
+          "id": "memory-after-idle",
+          "title": "After first idle",
+          "description": "Renderer and GPU process memory over a blank page, once the initial view has settled.",
+          "unit": "MB",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 334.8
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 186.3
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 186.1
+            }
+          ]
+        },
+        {
+          "id": "memory-after-path",
+          "title": "After the camera path",
+          "description": "Renderer and GPU process memory over a blank page after the 60-view cold pan, with each library's default tile cache.",
+          "unit": "MB",
+          "lowerIsBetter": true,
+          "results": [
+            {
+              "candidateId": "mapbox-gl-1-13",
+              "value": 1448.4
+            },
+            {
+              "candidateId": "maplibre-gl-5",
+              "value": 918.6
+            },
+            {
+              "candidateId": "maplibre-gl-6",
+              "value": 1004.6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "One GPU, one operating system, one browser build: an integrated AMD Radeon 680M on Windows 11 24H2 in Playwright's Chromium 151 headless shell through ANGLE on Direct3D 11, driven over ssh from a session with no desktop. Ratios on Apple silicon, on a discrete NVIDIA card, or in Firefox will differ.",
+    "Renderer only. Mapbox's hosted data, the Standard style, its CDN and its current SDK are not measured, because Mapbox's Product Terms forbid using current Mapbox GL JS in a comparison with a substitute. The Mapbox candidate is the last BSD-licensed release, which is also the code MapLibre forked, so this page compares the fork with its origin, not with the current Mapbox product.",
+    "Defaults are measured, not equalized. mapbox-gl 1.13 starts six Web Workers on this machine and the MapLibre builds start one, which is most of the difference in load time with fades off and in renderer memory. MapLibre GL JS 6 defaults zoomLevelsToOverscale to 4, so past the source's maxzoom of 14 it fetches and parses each parent tile once per child position, which is why its tile requests per pass are higher and its label placement at high zoom differs; the parity gate counts distinct features on screen so that choice does not fail it.",
+    "The builds disagree about what load and idle mean. mapbox-gl 1.13 holds load until its tile fade and idle until its label fade have finished; the MapLibre builds fire idle within a few milliseconds of load. The default-fade marks are reported as each build fires them, and the section's headline uses load with fadeDuration 0, the one mark that means the same amount of work in every build.",
+    "One style, OSM Bright, with no globe, terrain, hillshade or 3D buildings, so features one build has and another lacks are not exercised. The style names an icon per POI class and its sprite lacks some of them, so every build logs the same missing-image warnings and draws those labels without an icon.",
+    "Frame time is unthrottled and headless: relative renderer cost per frame with the camera moving every frame, not what a 60 Hz screen shows a user. The warm traversal has every tile the cold pan loaded resident, but tiles only needed at intermediate camera states are still requested and abandoned as the camera moves on; those requests are counted beside the timings and are inside the frame time.",
+    "The GeoJSON test is sensitive to protocol details in a way the other tests are not: mapbox-gl 1.13's figure moved from 311 ms to 404 ms between two runs on the same day whose only difference was a two-second settle before startup, while both MapLibre figures stayed put. The published number is from the run with the settle; treat that test as indicative.",
+    "Memory is renderer plus GPU process private bytes over a blank page, with each library's default tile cache; on an integrated GPU the GPU process figure is system memory. The JS heap metric covers the main thread only, because the browser build does not expose the API that includes workers, and tile data lives in the workers. A fresh headless browser in this non-interactive session occasionally dies at launch or under load, for any candidate; a dead browser was relaunched and the sample redone, and the relaunch counts are in the run file.",
+    "mapbox-gl 1.13.3 renders through WebGL 1 and the MapLibre builds through WebGL 2, because that is what each artifact does; nothing was patched to equalize it.",
+    "Fifteen timing passes and fifteen memory samples on one machine on one day, the timing and memory phases run as separate processes; every sample is in the run file."
+  ],
+  "trademarks": [
+    "Mapbox and Mapbox GL JS are trademarks of Mapbox, Inc. mapbox-gl 1.13.3 is used under its BSD-3-Clause license.",
+    "MapLibre is a project of the MapLibre organization; maplibre-gl is BSD-3-Clause.",
+    "Map data: OpenStreetMap contributors, ODbL, via the Geofabrik Berlin extract of 2026-01-01, cut with planetiler. Style: OSM Bright by OpenMapTiles, BSD-3-Clause. Glyphs: Noto Sans, SIL Open Font License."
+  ],
+  "runnerUrl": "https://github.com/warefeats/web-map-renderers"
+}

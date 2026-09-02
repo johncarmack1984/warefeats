@@ -18,5 +18,9 @@
   "postgis-vector-tile-servers": {
     "repo": "warefeats/vector-tile-servers",
     "ref": "20fff380a316b4c3f353d48e1cdec2ba1f0ca0c8"
+  },
+  "maplibre-gl-js-vs-mapbox-gl-js": {
+    "repo": "warefeats/web-map-renderers",
+    "ref": "01af5e595bb75efc0908d7ec80498f6e8f4e8d00"
   }
 }
